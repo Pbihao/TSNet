@@ -41,6 +41,93 @@ class Transpose(object):
             return timgs, tannos
 
 
+class ToFloat(object):
+    """
+    convert value type to float
+    """
+    def __call__(self, imgs, annos):
+        for idx, img in enumerate(imgs):
+            imgs[idx] = img.astype(dtype=np.float32, copy=True)
+        for idx, anno in enumerate(annos):
+            annos[idx] = anno.astype(dtype=np.float32, copy=True)
+        return imgs, annos
+
+
+class Rescale(object):
+    """
+    rescale the size of image and masks
+    """
+    def __init__(self, target_size):
+        assert isinstance(target_size, (int, tuple, list))
+        if isinstance(target_size, int):
+            self.target_size = (target_size, target_size)
+        else:
+            self.target_size = target_size
+
+    def __call__(self, imgs, annos):
+        h, w = imgs[0].shape[:2]
+        new_height, new_width = self.target_size
+
+        factor = min(new_height / h, new_width / w)
+        height, width = int(factor * h), int(factor * w)
+        pad_l = (new_width - width) // 2
+        pad_t = (new_height - height) // 2
+
+        for id, img in enumerate(imgs):
+            canvas = np.zeros((new_height, new_width, 3), dtype=np.float32)
+            rescaled_img = cv2.resize(img, (width, height))
+            canvas[pad_t:pad_t+height, pad_l:pad_l+width, :] = rescaled_img
+            imgs[id] = canvas
+
+        for id, anno in enumerate(annos):
+            canvas = np.zeros((new_height, new_width, 1), dtype=np.float32)
+            rescaled_anno = cv2.resize(anno, (width, height), cv2.INTER_NEAREST)
+            canvas[pad_t:pad_t + height, pad_l:pad_l + width, :] = rescaled_anno[:,:,np.newaxis]
+            annos[id] = canvas
+
+        return imgs, annos
+
+
+class Normalize(object):
+
+    def __init__(self):
+        self.mean = np.array([0.485, 0.456, 0.406]).reshape([1, 1, 3]).astype(np.float32)
+        self.std = np.array([0.229, 0.224, 0.225]).reshape([1, 1, 3]).astype(np.float32)
+
+    def __call__(self, imgs, annos):
+
+        for id, img in enumerate(imgs):
+            imgs[id] = (img / 255.0 - self.mean) / self.std
+
+        return imgs, annos
+
+
+class Stack(object):
+    """
+    stack adjacent frames into input tensors
+    """
+    def __call__(self, imgs, annos):
+        num_img = len(imgs)
+        num_anno = len(annos)
+        assert num_img == num_anno
+        img_stack = np.stack(imgs, axis=0)
+        anno_stack = np.stack(annos, axis=0)
+        return img_stack, anno_stack
+
+
+class ToTensor(object):
+    """
+    convert to torch.Tensor
+    """
+    def __call__(self, imgs, annos):
+        imgs = torch.from_numpy(imgs.copy())
+        annos = torch.from_numpy(annos.astype(np.uint8, copy=True)).float()
+        imgs = imgs.permute(0, 3, 1, 2).contiguous()
+        annos = annos.permute(0, 3, 1, 2).contiguous()
+        return imgs, annos
+
+
+
 # This will crop the original images, which only remains images containing needed features and then rescale
 # version~0.0: update on Sep. 23
 class Support_crop(object):
@@ -52,9 +139,8 @@ class Support_crop(object):
             self.target_size = size
 
     def __call__(self, imgs, annos):
-
+        dst_imgs, dst_annos = [], []
         for img, ann in zip(imgs, annos):
-
             contours, hierarchy = cv2.findContours(ann, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
             points = []
@@ -88,28 +174,54 @@ class Support_crop(object):
             anno = cv2.cvtColor(anno, cv2.COLOR_GRAY2RGB)
             cv2.rectangle(anno, (x, y), (x + w, y + h), (0, 255, 2))
 
-            # for contour in contours:
-            #     for [point] in contour:
-            #         anno = cv2.circle(anno, point, radius=1, color=(0, 0, 255), thickness=-1)
-            # cv2.imshow("123", anno)
-            # cv2.waitKey()
             img = img[y: y + h, x: x + w]
             ann = ann[y: y + h, x: x + w]
-            cv2.imshow("1", img)
-            cv2.imshow("2", ann * 255)
-            cv2.waitKey()
+            # cv2.imshow("1", cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
+            # cv2.imshow("2", ann * 255)
+            # k = cv2.waitKey()
+            # if k == 27:
+            #     quit()
+            dst_imgs.append(img)
+            dst_annos.append(ann)
+        return dst_imgs, dst_annos
 
 
-class TrainTransform(object):
+class Transform(object):
     def __init__(self, size):
-        self.size = size
+        self.support_crop = Support_crop(size)
         self.transform = Compose([
             AddAxis(),
-            Transpose(),
+            ToFloat(),
+            Rescale(size),
+            Normalize(),
+            Stack(),
+            ToTensor()
         ])
 
     def __call__(self, imgs, annos, support=False):
-        pass
+        if support:
+            imgs, annos = self.support_crop(imgs, annos)
+        return self.transform(imgs, annos)
+
+
+# tensor:[b, c, h, w] all elements are normalized  --> return list [narray, ... ]
+# if tensor:[c, h, w] --> return narray
+def unnormalize_tensor_to_img(tensors: torch.Tensor):
+    mean = (0.485, 0.456, 0.406)
+    std = (0.229, 0.224, 0.225)
+
+    if len(tensors.shape) == 3:
+        tensors = tensors.unsqueeze(dim=0)
+    images = []
+    for tensor in tensors:
+        for t, m, s in zip(tensor, mean, std):
+            t.mul_(s).add_(m)
+
+        img = tensor.clamp(0, 1).permute((1, 2, 0)).cpu().numpy()
+        img *= 255
+        img = img.astype(np.uint8)
+        images.append(img)
+    return images if len(images) > 1 else images[0]
 
 
 if __name__ == "__main__":
@@ -127,5 +239,20 @@ if __name__ == "__main__":
     new_support_img = load(os.path.join(os.getcwd(), "tmp", 'new_support_img'))
     new_support_mask = load(os.path.join(os.getcwd(), "tmp", 'new_support_mask'))
 
-    Support_crop([241, 425])(new_support_img, new_support_mask)
+    transform = Transform((241, 425))
 
+    video_query_img, video_query_mask = transform(video_query_img, video_query_mask)
+    new_support_img, new_support_mask = transform(new_support_img, new_support_mask, support=True)
+
+    video_query_img = unnormalize_tensor_to_img(video_query_img)
+    new_support_img = unnormalize_tensor_to_img(new_support_img)
+    video_query_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in video_query_mask]
+    new_support_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in new_support_mask]
+
+    print(1)
+
+    # from dataset.VosDataset import VosDataset
+    # ytvos = VosDataset()
+    # for i in range(len(ytvos)):
+    #     video_query_img, video_query_mask, new_support_img, new_support_mask, idx = ytvos[i]
+    #     Support_crop([241, 425])(new_support_img, new_support_mask)
