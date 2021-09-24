@@ -225,34 +225,43 @@ def unnormalize_tensor_to_img(tensors: torch.Tensor):
 
 
 if __name__ == "__main__":
-    from utility import *
-    def load(path):
-        images = []
-        for i in range(5):
-            img = np.array(Image.open(os.path.join(path, str(i) + '.png')))
-            images.append(img)
-        return images
+    # from utility import *
+    # def load(path):
+    #     images = []
+    #     for i in range(5):
+    #         img = np.array(Image.open(os.path.join(path, str(i) + '.png')))
+    #         images.append(img)
+    #     return images
+    #
+    #
+    # video_query_img = load(os.path.join(os.getcwd(), "tmp", 'video_query_img'))
+    # video_query_mask = load(os.path.join(os.getcwd(), "tmp", 'video_query_mask'))
+    # new_support_img = load(os.path.join(os.getcwd(), "tmp", 'new_support_img'))
+    # new_support_mask = load(os.path.join(os.getcwd(), "tmp", 'new_support_mask'))
+    #
+    # transform = Transform((241, 425))
+    #
+    # video_query_img, video_query_mask = transform(video_query_img, video_query_mask)
+    # new_support_img, new_support_mask = transform(new_support_img, new_support_mask, support=True)
+    #
+    # video_query_img = unnormalize_tensor_to_img(video_query_img)
+    # new_support_img = unnormalize_tensor_to_img(new_support_img)
+    # video_query_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in video_query_mask]
+    # new_support_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in new_support_mask]
+    #
+    # print(1)
 
-
-    video_query_img = load(os.path.join(os.getcwd(), "tmp", 'video_query_img'))
-    video_query_mask = load(os.path.join(os.getcwd(), "tmp", 'video_query_mask'))
-    new_support_img = load(os.path.join(os.getcwd(), "tmp", 'new_support_img'))
-    new_support_mask = load(os.path.join(os.getcwd(), "tmp", 'new_support_mask'))
-
+    from dataset.VosDataset import VosDataset
+    ytvos = VosDataset()
     transform = Transform((241, 425))
+    for i in range(len(ytvos)):
+        video_query_img, video_query_mask, new_support_img, new_support_mask, idx = ytvos[i]
 
-    video_query_img, video_query_mask = transform(video_query_img, video_query_mask)
-    new_support_img, new_support_mask = transform(new_support_img, new_support_mask, support=True)
+        video_query_img, video_query_mask = transform(video_query_img, video_query_mask)
+        new_support_img, new_support_mask = transform(new_support_img, new_support_mask, support=True)
 
-    video_query_img = unnormalize_tensor_to_img(video_query_img)
-    new_support_img = unnormalize_tensor_to_img(new_support_img)
-    video_query_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in video_query_mask]
-    new_support_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in new_support_mask]
-
-    print(1)
-
-    # from dataset.VosDataset import VosDataset
-    # ytvos = VosDataset()
-    # for i in range(len(ytvos)):
-    #     video_query_img, video_query_mask, new_support_img, new_support_mask, idx = ytvos[i]
-    #     Support_crop([241, 425])(new_support_img, new_support_mask)
+        print(i)
+        # video_query_img = unnormalize_tensor_to_img(video_query_img)
+        # new_support_img = unnormalize_tensor_to_img(new_support_img)
+        # video_query_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in video_query_mask]
+        # new_support_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in new_support_mask]

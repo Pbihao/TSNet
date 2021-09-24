@@ -46,7 +46,7 @@ class VosDataset(Dataset):
         vid_info = self.vid_infos[vid]
         frames_list = vid_info['category_frames'][category].copy()  # which frame contains this category
 
-        if not frames_num:
+        if frames_num is None:
             frames_num = len(frames_list)
 
         original_frames_len = len(frames_list)
@@ -125,14 +125,16 @@ if __name__ == "__main__":
         for id, img in enumerate(imgs):
             Image.fromarray(img).save(os.path.join(path, str(id) + '.png'))
 
-    ytvos = VosDataset()
+    from dataset.transform import Transform
+    transform = Transform(args.input_size)
+    ytvos = VosDataset(transforms=transform)
     for i in range(len(ytvos)):
         video_query_img, video_query_mask, new_support_img, new_support_mask, idx = ytvos[i]
         print("id:", i)
 
-        save(video_query_img, os.path.join(os.getcwd(), "tmp", "video_query_img"))
-        save(video_query_mask, os.path.join(os.getcwd(), "tmp", "video_query_mask"))
-        save(new_support_img, os.path.join(os.getcwd(), "tmp", "new_support_img"))
-        save(new_support_mask, os.path.join(os.getcwd(), "tmp", "new_support_mask"))
-
-        break
+        # save(video_query_img, os.path.join(os.getcwd(), "tmp", "video_query_img"))
+        # save(video_query_mask, os.path.join(os.getcwd(), "tmp", "video_query_mask"))
+        # save(new_support_img, os.path.join(os.getcwd(), "tmp", "new_support_img"))
+        # save(new_support_mask, os.path.join(os.getcwd(), "tmp", "new_support_mask"))
+        #
+        # break

@@ -8,9 +8,9 @@ def get_arguments():
     parser.add_argument("--max_iters", type=int, default=3000)
     parser.add_argument("--step_iter", type=int, default=100)
 
-    # set to swap model
-    parser.add_argument("--test", action='store_true')  # test -> train
-    parser.add_argument("--debug", action='store_true')  # normal -> debug
+    # set to swap models
+    parser.add_argument("--train", action='store_true')  # test -> train
+    parser.add_argument("--debug", action='store_true')  # run -> debug
 
     # parameters of dataset
     parser.add_argument('--input_size', type=list, default=[241, 425])  # size of input images
