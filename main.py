@@ -40,5 +40,3 @@ args = get_arguments()
 if __name__ == '__main__':
     if not os.path.exists(args.data_dir):
         os.mkdir(args.data_dir)
-    if not os.path.exists(args.snapshots_dir):
-        os.mkdir(args.snapshots_dir)

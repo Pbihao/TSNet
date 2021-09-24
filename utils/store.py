@@ -42,7 +42,7 @@ def load_checkpoint(model, optimizer, checkpoint_path=None):
     return epoch, loss
 
 
-def save(model, model_path=None):
+def save_model(model, model_path=None):
     if model_path is None:
         model_path = os.path.join(args.snapshots_dir, 'checkpoint', 'best_model.pth')
     model_dir = os.path.split(model_path)[0]
@@ -51,7 +51,7 @@ def save(model, model_path=None):
     torch.save(model.state_dict(), model_path)
 
 
-def load(model, model_path=None):
+def load_model(model, model_path=None):
     if model_path is None:
         model_path = os.path.join(args.snapshots_dir, 'checkpoint', 'best_model.pth')
     assert os.path.exists(model_path)
@@ -61,4 +61,4 @@ def load(model, model_path=None):
 if __name__ == "__main__":
     from models.QueryKeyValue import QueryKeyValue
     qkv = QueryKeyValue(2, 2, 2)
-    print(load_checkpoint(qkv, None))
+    save_model(qkv)
