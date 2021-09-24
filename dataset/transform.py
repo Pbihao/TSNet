@@ -82,7 +82,7 @@ class Rescale(object):
         for id, anno in enumerate(annos):
             canvas = np.zeros((new_height, new_width, 1), dtype=np.float32)
             rescaled_anno = cv2.resize(anno, (width, height), cv2.INTER_NEAREST)
-            canvas[pad_t:pad_t + height, pad_l:pad_l + width, :] = rescaled_anno[:,:,np.newaxis]
+            canvas[pad_t:pad_t + height, pad_l:pad_l + width, :] = rescaled_anno[:, :, np.newaxis]
             annos[id] = canvas
 
         return imgs, annos
@@ -125,7 +125,6 @@ class ToTensor(object):
         imgs = imgs.permute(0, 3, 1, 2).contiguous()
         annos = annos.permute(0, 3, 1, 2).contiguous()
         return imgs, annos
-
 
 
 # This will crop the original images, which only remains images containing needed features and then rescale
@@ -205,7 +204,7 @@ class Transform(object):
 
 
 # tensor:[b, c, h, w] all elements are normalized  --> return list [narray, ... ]
-# if tensor:[c, h, w] --> return narray
+# tensor:[c, h, w] --> return narray
 def unnormalize_tensor_to_img(tensors: torch.Tensor):
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
@@ -225,31 +224,6 @@ def unnormalize_tensor_to_img(tensors: torch.Tensor):
 
 
 if __name__ == "__main__":
-    # from utility import *
-    # def load(path):
-    #     images = []
-    #     for i in range(5):
-    #         img = np.array(Image.open(os.path.join(path, str(i) + '.png')))
-    #         images.append(img)
-    #     return images
-    #
-    #
-    # video_query_img = load(os.path.join(os.getcwd(), "tmp", 'video_query_img'))
-    # video_query_mask = load(os.path.join(os.getcwd(), "tmp", 'video_query_mask'))
-    # new_support_img = load(os.path.join(os.getcwd(), "tmp", 'new_support_img'))
-    # new_support_mask = load(os.path.join(os.getcwd(), "tmp", 'new_support_mask'))
-    #
-    # transform = Transform((241, 425))
-    #
-    # video_query_img, video_query_mask = transform(video_query_img, video_query_mask)
-    # new_support_img, new_support_mask = transform(new_support_img, new_support_mask, support=True)
-    #
-    # video_query_img = unnormalize_tensor_to_img(video_query_img)
-    # new_support_img = unnormalize_tensor_to_img(new_support_img)
-    # video_query_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in video_query_mask]
-    # new_support_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in new_support_mask]
-    #
-    # print(1)
 
     from dataset.VosDataset import VosDataset
     ytvos = VosDataset()
@@ -261,7 +235,3 @@ if __name__ == "__main__":
         new_support_img, new_support_mask = transform(new_support_img, new_support_mask, support=True)
 
         print(i)
-        # video_query_img = unnormalize_tensor_to_img(video_query_img)
-        # new_support_img = unnormalize_tensor_to_img(new_support_img)
-        # video_query_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in video_query_mask]
-        # new_support_mask = [mask.permute(1, 2, 0).cpu().numpy().astype(np.uint8) for mask in new_support_mask]

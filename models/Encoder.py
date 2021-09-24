@@ -46,7 +46,8 @@ class Encoder(nn.Module):
     def forward(self, in_f, in_mask=None):
         if in_mask is not None:
             in_mask = in_mask.repeat((1, 3, 1, 1))
-            x = self.conv1(in_f) + self.conv1(in_mask)
+            x = self.conv1(in_f) * self.conv1(in_mask)
+            # x = self.conv1(in_f * in_mask)
         else:
             x = self.conv1(in_f)  # 1/2, 64
         x = self.bn1(x)
@@ -65,5 +66,11 @@ if __name__ == "__main__":
     encoder = Encoder()
     q_r4, q_r3, q_r2, q_c1, q_f = encoder(query_img)
     s_r4, s_r3, s_r2, s_c1, s_f = encoder(support_img, support_mask)
+
+    support_path = os.path.join(os.getcwd(), 'tmp', 'support')
+    save_normal_img(support_img[3], support_path + '/query.png')
+    save_normal_img(support_mask[3], support_path + '/support.png')
+
+    save_features(s_r3[3], support_path + '/r3')
 
     print("finished")
