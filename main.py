@@ -5,8 +5,11 @@ import os
 def get_arguments():
     parser = argparse.ArgumentParser(description="TSNet")
     parser.add_argument("--arch", type=str, default='TSNet')
+
+    # parameters of train
     parser.add_argument("--max_iters", type=int, default=3000)
     parser.add_argument("--step_iter", type=int, default=100)
+    parser.add_argument("--save_epoch", type=int, default=5)
 
     # set to swap models
     parser.add_argument("--train", action='store_true')  # test -> train

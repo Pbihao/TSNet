@@ -1,5 +1,6 @@
 import os
 
+import torch.nn
 import torch.nn as nn
 import torch.nn.functional as F
 from Encoder import ResBlock
@@ -20,7 +21,7 @@ class Refine(nn.Module):
 
 
 class Decoder(nn.Module):
-    def __init__(self, in_planes, mdim):
+    def __init__(self, in_planes=1024, mdim=256):
         super(Decoder, self).__init__()
         self.convFM = nn.Conv2d(in_planes, mdim, kernel_size=(3, 3), padding=(1, 1), stride=1)
         self.resMM = ResBlock(mdim, mdim)
@@ -49,10 +50,12 @@ if __name__ == "__main__":
     query_img, query_mask, support_img, support_mask = load_from_folder()
 
     encoder = Encoder()
-    s_r4, s_r3, s_r2, s_c1, s_f = encoder(support_img, support_mask)
+    s_r4, s_r3, s_r2, s_c1, s_f = encoder(support_img,support_mask)
 
     decoder = Decoder(in_planes=1024, mdim=256)
     preds = decoder(s_r4, s_r3, s_r2, s_f)
+    preds = torch.nn.Sigmoid()(preds)
+
 
     pred_path = os.path.join(os.getcwd(), 'tmp', 'pred')
     for idx, s_img in enumerate(support_img):
