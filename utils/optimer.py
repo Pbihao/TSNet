@@ -1,7 +1,7 @@
 from torch.optim import Adam
 
 
-def optimizer(model):
+def get_optimizer(model):
     for param in model.encoder.parameters():
         param.requires_grad = False
     

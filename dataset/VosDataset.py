@@ -125,7 +125,7 @@ if __name__ == "__main__":
         for id, img in enumerate(imgs):
             Image.fromarray(img).save(os.path.join(path, str(id) + '.png'))
 
-    from dataset.transform import Transform
+    from dataset.Transform import Transform
     transform = Transform(args.input_size)
     ytvos = VosDataset(transforms=transform)
     for i in range(len(ytvos)):

@@ -14,6 +14,7 @@ def get_arguments():
     # set to swap models
     parser.add_argument("--train", action='store_true')  # test -> train
     parser.add_argument("--debug", action='store_true')  # run -> debug
+    parser.add_argument("--turn_off_cuda", action='store_true')  # turn off cuda
 
     # parameters of dataset
     parser.add_argument('--input_size', type=list, default=[241, 425])  # size of input images
@@ -21,6 +22,9 @@ def get_arguments():
     parser.add_argument('--num_of_all_classes', type=int, default=40)  # num of all classes used
     parser.add_argument('--num_of_per_group', type=int, default=4)  # num of how many categories used for once train
     parser.add_argument('--sample_per_category', type=int, default=10)  # how may folders will be used for one category
+    parser.add_argument('--batch_size', type=int, default=1)
+    parser.add_argument('--num_workers', type=int, default=4)
+    parser.add_argument("--max_epoch", type=int, default=101)
 
     # hyper-parameters
     parser.add_argument("--query_frame", type=int, default=5)
