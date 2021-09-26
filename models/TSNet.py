@@ -45,7 +45,7 @@ class TSNet(nn.Module):
         query_img, support_img, support_mask = convert_to_input(query_img, support_img, support_mask)
         query_r4, query_r3, query_r2, query_c1, query_in_f = self.encoder(query_img)
 
-        support_r4 = self.encoder(support_img, support_mask)
+        support_r4, _, _, _, _ = self.encoder(support_img, support_mask)
 
         r4 = query_r4 * support_r4
 
