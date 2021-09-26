@@ -30,6 +30,7 @@ class Measure_Log(EasyDict):
             params = self.params
         for parm in params:
             result[parm] = self[parm] / self.N
+        return result
 
     def print_average(self):
         if self.info is not None:

@@ -29,6 +29,7 @@ def get_arguments():
     # hyper-parameters
     parser.add_argument("--query_frame", type=int, default=5)
     parser.add_argument("--support_frame", type=int, default=5)
+    parser.add_argument("--pred_thresh", type=float, default=0.5)
 
     # related path
     parser.add_argument('--data_dir', type=str, default=os.path.join(os.getcwd(), "data"))

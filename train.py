@@ -12,6 +12,8 @@ from dataset.VosDataset import VosDataset
 from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
 from utils.Measure_Log import Measure_Log
+from utils.store import *
+from utils.evalution import eval_boundary_iou
 
 
 def open_log_file(log_path=None):
@@ -34,6 +36,7 @@ def turn_on_cuda(x):
     if torch.cuda.is_available() and not args.turn_off_cuda:
         return x.cuda()
     return x
+
 
 def train(open_log=True, checkpoint=False):
     if open_log:
@@ -63,6 +66,7 @@ def train(open_log=True, checkpoint=False):
     criterion = lambda pred, target, bootstrap=1: [cross_entropy_loss(pred, target, bootstrap),
                                                    mask_iou_loss(pred, target)]
     print('\n==>Start training ... ')
+    best_mean_iou = 0
     for epoch in range(start_epoch, args.max_epoch):
         print('\n==> Training epoch {:d}'.format(epoch))
 
@@ -79,13 +83,16 @@ def train(open_log=True, checkpoint=False):
 
             ce_loss, iou_loss = criterion(pred_map, query_mask)
             loss = 5 * ce_loss + iou_loss
-            loss_measure.add([loss, ce_loss, iou_loss])
+            loss_measure.add([loss.item(), ce_loss.item(), iou_loss.item()])
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
         loss_measure.print_average()
+        mean_loss = loss_measure.get_average(['total_loss']).total_loss
 
+        eval_measure = Measure_Log(['boundary', 'iou'],
+                                   "The scores of boundary and iou measures of Epoch {:d}".format(epoch))
         with torch.no_grad():
             model.eval()
             for query_img, query_mask, support_img, support_mask, idx in valid_loader:
@@ -95,9 +102,15 @@ def train(open_log=True, checkpoint=False):
                 pred_map = pred_map.squeeze(2)
                 query_mask = query_mask.squeeze(2)
 
+                boundary, iou = eval_boundary_iou(query_mask, pred_map)
+                eval_measure.add([boundary, iou])
 
-
-
+        eval_measure.print_average()
+        save_checkpoint(model, epoch, mean_loss, optimizer)
+        mean_iou = eval_measure.get_average(['iou']).iou
+        if mean_iou > best_mean_iou:
+            best_mean_iou = mean_iou
+            save_model(model)
 
 if __name__ == "__main__":
     train(open_log=False)
