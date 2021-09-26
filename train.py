@@ -69,9 +69,8 @@ def train(open_log=True, checkpoint=False):
     valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False, num_workers=2)
 
     print('\n==> Setting loss')
-    criterion = lambda pred, target, bootstrap=1: [cross_entropy_loss(pred, target, bootstrap),
-                                                   mask_iou_loss(pred, target)]
-    print('\n==>Start training ... ')
+    criterion = lambda pred, target: [cross_entropy_loss(pred, target), mask_iou_loss(pred, target)]
+    print('\n==> Start training ... ')
     best_mean_iou = 0
     for epoch in range(start_epoch, args.max_epoch):
         print('\n==> Training epoch {:d}'.format(epoch))
@@ -83,9 +82,9 @@ def train(open_log=True, checkpoint=False):
             query_img, query_mask, support_img, support_mask = turn_on_cuda(query_img), turn_on_cuda(query_mask), \
                                                                turn_on_cuda(support_img), turn_on_cuda(support_mask)
             pred_map = model(query_img, support_img, support_mask)
-
             pred_map = pred_map.squeeze(2)
-            query_mask = query_mask.squeeze(2)
+            # query_mask = query_mask.squeeze(2)
+            query_mask = support_mask.squeeze(2)
 
             ce_loss, iou_loss = criterion(pred_map, query_mask)
             loss = 5 * ce_loss + iou_loss
@@ -94,6 +93,7 @@ def train(open_log=True, checkpoint=False):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
         loss_measure.print_average()
         mean_loss = loss_measure.get_average(['total_loss']).total_loss
 
@@ -106,7 +106,8 @@ def train(open_log=True, checkpoint=False):
                                                                    turn_on_cuda(support_img), turn_on_cuda(support_mask)
                 pred_map = model(query_img, support_img, support_mask)
                 pred_map = pred_map.squeeze(2)
-                query_mask = query_mask.squeeze(2)
+                # query_mask = query_mask.squeeze(2)
+                query_mask = support_mask.squeeze(2)
 
                 boundary, iou = eval_boundary_iou(query_mask, pred_map)
                 eval_measure.add([boundary, iou])
@@ -118,6 +119,7 @@ def train(open_log=True, checkpoint=False):
             best_mean_iou = mean_iou
             save_model(model)
 
+    close_log_file()
 
 if __name__ == "__main__":
     train(open_log=False)

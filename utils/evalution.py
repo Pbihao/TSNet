@@ -18,6 +18,6 @@ def eval_boundary_iou(query_mask, pred, thresh=args.pred_thresh):
 
             boundary_sum += db_eval_boundary(predict, y)
             iou_sum += db_eval_iou(predict, y)
-            total += 0
+            total += 1
 
     return boundary_sum / total, iou_sum / total

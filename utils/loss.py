@@ -1,4 +1,6 @@
 import torch
+import torch.nn as nn
+from args import args
 
 
 def mask_iou(pred, target):
@@ -27,29 +29,16 @@ def binary_entropy_loss(pred, target, eps=0.001):
     return loss
 
 
-def cross_entropy_loss(pred, target, bootstrap=0.4, eps=0.001,weight=1):
+def cross_entropy_loss(pred, target):
 
     # pred: [N x F x H x W]
-    # mask: [N x F x H x W] one-hot encoded
-    N, F, H, W = target.shape
+    # mask: [N x F x H x W]
+    bce = nn.BCELoss()
 
-    # pred = -1 * torch.log(pred + eps)
-    loss = - 1.0 * target * torch.log(pred + eps) - weight * (1 - target) * torch.log(1 - pred + eps)
-    # loss = - 1.0 * target * torch.log(pred + eps)
-    # loss = torch.sum(pred[:, :num_object+1] * mask[:, :num_object+1])
-    # loss = loss / (H * W * N)
+    if torch.cuda.is_available() and not args.turn_off_cuda:
+        bce = bce.cuda()
 
-    # bootstrap
-    num = int(H * W * bootstrap)
-    # print((pred*mask).shape)
-
-    # loss = (pred* mask).view(N, F, -1)
-    # print(loss.shape)
-    if bootstrap == 1:
-        return torch.mean(loss)
-    loss = loss.view(N,F,-1)
-    mloss, _ = torch.sort(loss, dim=-1, descending=True)
-    loss = torch.mean(mloss[:,:, :num])
+    loss = bce(pred, target)
 
     return loss
 

@@ -45,7 +45,7 @@ class Encoder(nn.Module):
     # need to be tested which method to merge the in_f and mask is best
     def forward(self, in_f, in_mask=None):
         if in_mask is not None:
-            in_mask = in_mask.repeat((1, 3, 1, 1))
+            in_mask = in_mask.repeat((1, 3, 1, 1))  # B, F, C, W, H
             x = self.conv1(in_f) * self.conv1(in_mask)
             # x = self.conv1(in_f * in_mask)
         else:
