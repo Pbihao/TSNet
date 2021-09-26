@@ -14,6 +14,7 @@ from utils.loss import cross_entropy_loss, mask_iou_loss
 from utils.Measure_Log import Measure_Log
 from utils.store import *
 from utils.evalution import eval_boundary_iou
+from tqdm import tqdm
 
 
 def open_log_file(log_path=None):
@@ -78,7 +79,7 @@ def train(open_log=True, checkpoint=False):
         model.train()
         loss_measure = Measure_Log(['total_loss', 'cross_entropy_loss', 'iou_loss'],
                                    "The loss of Epoch {:d}".format(epoch))
-        for query_img, query_mask, support_img, support_mask, idx in train_loader:
+        for query_img, query_mask, support_img, support_mask, idx in tqdm(train_loader):
             query_img, query_mask, support_img, support_mask = turn_on_cuda(query_img), turn_on_cuda(query_mask), \
                                                                turn_on_cuda(support_img), turn_on_cuda(support_mask)
             pred_map = model(query_img, support_img, support_mask)
@@ -101,7 +102,7 @@ def train(open_log=True, checkpoint=False):
                                    "The scores of boundary and iou measures of Epoch {:d}".format(epoch))
         with torch.no_grad():
             model.eval()
-            for query_img, query_mask, support_img, support_mask, idx in valid_loader:
+            for query_img, query_mask, support_img, support_mask, idx in tqdm(valid_loader):
                 query_img, query_mask, support_img, support_mask = turn_on_cuda(query_img), turn_on_cuda(query_mask), \
                                                                    turn_on_cuda(support_img), turn_on_cuda(support_mask)
                 pred_map = model(query_img, support_img, support_mask)
