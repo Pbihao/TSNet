@@ -11,6 +11,7 @@ from dataset.Transform import Transform
 from dataset.VosDataset import VosDataset
 from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
+from utils.Measure_Log import Measure_Log
 
 
 def open_log_file(log_path=None):
@@ -29,7 +30,7 @@ def close_log_file():
 
 def turn_on_cuda(x):
     if not hasattr(x, 'cuda'):
-        return
+        return x
     if torch.cuda.is_available() and not args.turn_off_cuda:
         return x.cuda()
     return x
@@ -64,7 +65,10 @@ def train(open_log=True, checkpoint=False):
     print('\n==>Start training ... ')
     for epoch in range(start_epoch, args.max_epoch):
         print('\n==> Training epoch {:d}'.format(epoch))
+
         model.train()
+        loss_measure = Measure_Log(['total_loss', 'cross_entropy_loss', 'iou_loss'],
+                                   "The loss of Epoch {:d}".format(epoch))
         for query_img, query_mask, support_img, support_mask, idx in train_loader:
             query_img, query_mask, support_img, support_mask = turn_on_cuda(query_img), turn_on_cuda(query_mask), \
                                                                turn_on_cuda(support_img), turn_on_cuda(support_mask)
@@ -75,19 +79,24 @@ def train(open_log=True, checkpoint=False):
 
             ce_loss, iou_loss = criterion(pred_map, query_mask)
             loss = 5 * ce_loss + iou_loss
+            loss_measure.add([loss, ce_loss, iou_loss])
 
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+        loss_measure.print_average()
 
         with torch.no_grad():
+            model.eval()
             for query_img, query_mask, support_img, support_mask, idx in valid_loader:
                 query_img, query_mask, support_img, support_mask = turn_on_cuda(query_img), turn_on_cuda(query_mask), \
                                                                    turn_on_cuda(support_img), turn_on_cuda(support_mask)
                 pred_map = model(query_img, support_img, support_mask)
                 pred_map = pred_map.squeeze(2)
                 query_mask = query_mask.squeeze(2)
-                
+
+
+
 
 
 if __name__ == "__main__":

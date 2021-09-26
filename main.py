@@ -21,7 +21,7 @@ def get_arguments():
     parser.add_argument('--valid_idx', type=int, default=1)  # class id used for valid
     parser.add_argument('--num_of_all_classes', type=int, default=40)  # num of all classes used
     parser.add_argument('--num_of_per_group', type=int, default=4)  # num of how many categories used for once train
-    parser.add_argument('--sample_per_category', type=int, default=10)  # how may folders will be used for one category
+    parser.add_argument('--sample_per_category', type=int, default=100)  # how may folders will be used for one category
     parser.add_argument('--batch_size', type=int, default=1)
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument("--max_epoch", type=int, default=101)
@@ -29,7 +29,6 @@ def get_arguments():
     # hyper-parameters
     parser.add_argument("--query_frame", type=int, default=5)
     parser.add_argument("--support_frame", type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=1)
 
     # related path
     parser.add_argument('--data_dir', type=str, default=os.path.join(os.getcwd(), "data"))
