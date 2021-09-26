@@ -17,6 +17,8 @@ def get_arguments():
     parser.add_argument("--train", action='store_true')  # test -> train
     parser.add_argument("--debug", action='store_true')  # run -> debug
     parser.add_argument("--turn_off_cuda", action='store_true')  # turn off cuda
+    parser.add_argument("--train_from_last_checkpoint", action='store_true')
+    parser.add_argument("--train_from_best_model", action='store_true')
 
     # parameters of dataset
     parser.add_argument('--input_size', type=list, default=[241, 425])  # size of input images

@@ -39,7 +39,7 @@ def turn_on_cuda(x):
     return x
 
 
-def train(open_log=True, checkpoint=False):
+def train(open_log=True, checkpoint=False, best_model=False):
     """
     :param open_log:    set True to write all infos to log file
     :param checkpoint:  set True to start train from last checkpoint
@@ -55,7 +55,9 @@ def train(open_log=True, checkpoint=False):
     model = turn_on_cuda(model)
     optimizer = get_optimizer(model)
     start_epoch = 0
-    if checkpoint:
+    if best_model:
+        load_model(model)
+    elif checkpoint:
         start_epoch, start_loss = load_checkpoint(model, optimizer)
         print("\n==> Training from last checkpoint ...")
         print("     Epoch: %d" % start_epoch)

@@ -34,7 +34,7 @@ class Measure_Log(EasyDict):
 
     def print_average(self):
         if self.info is not None:
-            print("~~~~ :", self.info, ":")
+            print("~~~~:", self.info, ":")
         for param in self.params:
             print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.N))
 

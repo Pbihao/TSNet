@@ -4,6 +4,21 @@ import numpy as np
 from args import args
 
 
+# deal with the conflict of store method between different versions if pytorch
+def save_under_different_version(model, path, compatibility=True):
+    version = torch.__version__
+    version = int(version.split('.')[1])
+
+    torch.save(model, path)
+    if version >= 6 and compatibility:
+        folder = os.path.split(path)[0]
+        file_name = os.path.split(path)[1]
+        idx = file_name.index('.')
+        file_name, suffix = file_name[:idx], file_name[idx:]
+        path = folder + "/" + file_name + "less_than_1.6" + suffix
+        torch.save(model, path, _use_new_zipfile_serialization=False)
+
+
 def get_model_para_number(model):
     total = 0
     for para in model.parameters():
@@ -20,7 +35,8 @@ def save_checkpoint(model, epoch, loss, optimizer):
         os.mkdir(save_dir)
 
     checkpoint_path = os.path.join(save_dir, 'checkpoint.pth.tar')
-    torch.save({
+
+    save_under_different_version({
         'epoch': epoch,
         'model_state_dict': model.state_dict(),
         'optimizer_state_dict': optimizer.state_dict() if optimizer is not None else None,
@@ -48,7 +64,7 @@ def save_model(model, model_path=None):
     model_dir = os.path.split(model_path)[0]
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
-    torch.save(model.state_dict(), model_path)
+    save_under_different_version(model.state_dict(), model_path)
 
 
 def load_model(model, model_path=None):
