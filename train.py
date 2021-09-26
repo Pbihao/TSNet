@@ -121,6 +121,7 @@ def train(open_log=True, checkpoint=False, best_model=False):
         if mean_iou > best_mean_iou:
             best_mean_iou = mean_iou
             save_model(model)
+            print("    < Best model update at epoch {:b}. >".format(epoch))
 
     close_log_file()
 

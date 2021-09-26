@@ -10,7 +10,7 @@ from dataset.Transform import unnormalize_tensor_to_img
 
 
 # input img: [:, :, :]    Tensor(w, h, c) or narray((w, h, c))
-# img [[:, :, :], ]   list((w, h, c), )
+# img ([:, :, :], )   list((w, h, c), )
 def show_img(img):
     if type(img) == torch.Tensor:
         img = img.cpu().detach().numpy()

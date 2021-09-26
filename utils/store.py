@@ -15,7 +15,7 @@ def save_under_different_version(model, path, compatibility=True):
         file_name = os.path.split(path)[1]
         idx = file_name.index('.')
         file_name, suffix = file_name[:idx], file_name[idx:]
-        path = folder + "/" + file_name + "less_than_1.6" + suffix
+        path = folder + "/" + file_name + "_less_than_1.6" + suffix
         torch.save(model, path, _use_new_zipfile_serialization=False)
 
 
