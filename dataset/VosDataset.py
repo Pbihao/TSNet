@@ -1,10 +1,10 @@
-from main import args
+from args import args
 from PIL import Image
 import random
 import cv2
 from pycocotools.ytvos import YTVOS
 from torch.utils.data import Dataset
-from main import args
+from args import args
 import os
 import numpy as np
 

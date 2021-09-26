@@ -2,7 +2,7 @@ import os
 import torch
 from utils.store import get_model_para_number
 from models.TSNet import TSNet
-from main import args
+from args import args
 import sys
 from utils.Logger import Logger
 from utils.optimer import get_optimizer
@@ -39,6 +39,12 @@ def turn_on_cuda(x):
 
 
 def train(open_log=True, checkpoint=False):
+    """
+    :param open_log:    set True to write all infos to log file
+    :param checkpoint:  set True to start train from last checkpoint
+    :return:
+    """
+
     if open_log:
         open_log_file()
 
@@ -111,6 +117,7 @@ def train(open_log=True, checkpoint=False):
         if mean_iou > best_mean_iou:
             best_mean_iou = mean_iou
             save_model(model)
+
 
 if __name__ == "__main__":
     train(open_log=False)

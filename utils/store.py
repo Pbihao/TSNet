@@ -1,7 +1,7 @@
 import os
 import torch
 import numpy as np
-from main import args
+from args import args
 
 
 def get_model_para_number(model):

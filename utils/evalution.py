@@ -3,7 +3,7 @@
 
 from utils.davis_JF import db_eval_iou
 from utils.davis_JF import db_eval_boundary
-from main import args
+from args import args
 
 
 def eval_boundary_iou(query_mask, pred, thresh=args.pred_thresh):
