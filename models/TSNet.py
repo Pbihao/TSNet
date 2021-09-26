@@ -39,13 +39,18 @@ class TSNet(nn.Module):
         super().__init__()
         self.encoder = Encoder()
         self.decoder = Decoder()
-        self.sigmod = nn.Sigmoid()
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, query_img, support_img, support_mask):
         query_img, support_img, support_mask = convert_to_input(query_img, support_img, support_mask)
-        r4, r3, r2, c1, in_f = self.encoder(support_img, support_mask)
-        mask = self.decoder(r4, r3, r2, in_f)
-        mask = self.sigmod(mask)
+        query_r4, query_r3, query_r2, query_c1, query_in_f = self.encoder(query_img)
+
+        support_r4 = self.encoder(support_img, support_mask)
+
+        r4 = query_r4 * support_r4
+
+        mask = self.decoder(r4, query_r3, query_r2, query_in_f)
+        mask = self.sigmoid(mask)
         mask = convert_to_output(mask)
         return mask
 

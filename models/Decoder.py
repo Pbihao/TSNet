@@ -1,5 +1,4 @@
 import os
-
 import torch.nn
 import torch.nn as nn
 import torch.nn.functional as F
@@ -31,7 +30,7 @@ class Decoder(nn.Module):
         self.pred2 = nn.Conv2d(mdim, 1, kernel_size=(3, 3), padding=(1, 1), stride=1)
 
     # ################################################################################################
-    # ##################### differences between softmax or just use one dimension
+    # ##################### differences between softmax or just use one dimension #####################
     def forward(self, r4, r3, r2, f):
         m4 = self.resMM(self.convFM(r4))
         m3 = self.RF3(r3, m4)  # out: 1/8, 256
@@ -50,12 +49,11 @@ if __name__ == "__main__":
     query_img, query_mask, support_img, support_mask = load_from_folder()
 
     encoder = Encoder()
-    s_r4, s_r3, s_r2, s_c1, s_f = encoder(support_img,support_mask)
+    s_r4, s_r3, s_r2, s_c1, s_f = encoder(support_img, support_mask)
 
     decoder = Decoder(in_planes=1024, mdim=256)
     preds = decoder(s_r4, s_r3, s_r2, s_f)
     preds = torch.nn.Sigmoid()(preds)
-
 
     pred_path = os.path.join(os.getcwd(), 'tmp', 'pred')
     for idx, s_img in enumerate(support_img):

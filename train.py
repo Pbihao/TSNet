@@ -86,8 +86,7 @@ def train(open_log=True, checkpoint=False, best_model=False):
                                                                turn_on_cuda(support_img), turn_on_cuda(support_mask)
             pred_map = model(query_img, support_img, support_mask)
             pred_map = pred_map.squeeze(2)
-            # query_mask = query_mask.squeeze(2)
-            query_mask = support_mask.squeeze(2)
+            query_mask = query_mask.squeeze(2)
 
             ce_loss, iou_loss = criterion(pred_map, query_mask)
             loss = 5 * ce_loss + iou_loss
@@ -109,8 +108,7 @@ def train(open_log=True, checkpoint=False, best_model=False):
                                                                    turn_on_cuda(support_img), turn_on_cuda(support_mask)
                 pred_map = model(query_img, support_img, support_mask)
                 pred_map = pred_map.squeeze(2)
-                # query_mask = query_mask.squeeze(2)
-                query_mask = support_mask.squeeze(2)
+                query_mask = query_mask.squeeze(2)
 
                 boundary, iou = eval_boundary_iou(query_mask, pred_map)
                 eval_measure.add([boundary, iou])
