@@ -42,20 +42,20 @@ class Encoder(nn.Module):
         self.res4 = resnet.layer3  # 1/8, 1024
 
     ############################################################################################
-    # need to be tested which method to merge the in_f and mask is best
+    # ~~~~~~~~~~~~~~~~need to be tested which method to merge the in_f and mask is best
     def forward(self, in_f, in_mask=None):
-        if in_mask is not None:
-            in_mask = in_mask.repeat((1, 3, 1, 1))  # B, F, C, W, H
-            x = self.conv1(in_f) * self.conv1(in_mask)
-            # x = self.conv1(in_f * in_mask)
-        else:
-            x = self.conv1(in_f)  # 1/2, 64
+        x = self.conv1(in_f)  # 1/2, 64
         x = self.bn1(x)
         c1 = self.relu(x)
         x = self.maxpool(c1)  # 1/4, 64
         r2 = self.res2(x)  # 1/4, 256
         r3 = self.res3(r2)  # 1/8, 512
         r4 = self.res4(r3)  # 1/16, 1024
+
+        if in_mask is not None:
+            in_mask = F.interpolate(in_mask, r4.shape[2:], mode='bilinear', align_corners=True)
+            r4 = r4 * in_mask
+
         return r4, r3, r2, c1, in_f
 
 if __name__ == "__main__":
@@ -67,10 +67,16 @@ if __name__ == "__main__":
     q_r4, q_r3, q_r2, q_c1, q_f = encoder(query_img)
     s_r4, s_r3, s_r2, s_c1, s_f = encoder(support_img, support_mask)
 
-    support_path = os.path.join(os.getcwd(), 'tmp', 'support')
-    save_normal_img(support_img[3], support_path + '/query.png')
-    save_normal_img(support_mask[3], support_path + '/support.png')
+    # support_path = os.path.join(os.getcwd(), 'tmp', 'support')
+    # save_normal_img(support_img[3], support_path + '/query.png')
+    # save_normal_img(support_mask[3], support_path + '/support.png')
+    #
+    # save_features(s_r4[3], support_path + '/r4')
 
-    save_features(s_r3[3], support_path + '/r3')
+    idx = 4
+    query_path = os.path.join(os.getcwd(), 'tmp', 'query')
+    save_normal_img(query_img[idx], query_path + '/query_' + str(idx) + '.png')
+    save_normal_img(query_mask[idx], query_path + '/mask_' + str(idx) + '.png')
+    save_features(q_r4[idx], query_path + '/r4_' + str(idx))
 
     print("finished")
