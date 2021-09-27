@@ -43,6 +43,8 @@ def save_checkpoint(model, epoch, loss, optimizer):
         'loss': loss
     }, checkpoint_path)
 
+    print("    < Store checkpoint at epoch {:d}. >".format(epoch))
+
 
 def load_checkpoint(model, optimizer, checkpoint_path=None):
     if checkpoint_path is None:

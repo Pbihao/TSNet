@@ -22,7 +22,7 @@ def get_arguments():
 
     # parameters of dataset
     parser.add_argument('--input_size', type=list, default=[241, 425])  # size of input images
-    parser.add_argument('--valid_idx', type=int, default=1)  # class id used for valid
+    parser.add_argument('--valid_idx', type=int, default=1)  # class id used for valid [1, 2, 3, 4]
     parser.add_argument('--num_of_all_classes', type=int, default=40)  # num of all classes used
     parser.add_argument('--num_of_per_group', type=int, default=4)  # num of how many categories used for once train
     parser.add_argument('--sample_per_category', type=int, default=100)  # how may folders will be used for one category

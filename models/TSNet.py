@@ -86,24 +86,24 @@ class TSNet(nn.Module):
         support_k = merge_FWH(support_k)
         support_v = merge_FWH(support_v)
 
-        query_q = split_batch_frame(query_q)  # [B, F, C, H, W]
+        query_q = split_batch_frame(query_q)  # [B, F, Cq, H, W]
         mid_frame_idx = query_q.shape[1] // 2
-        mid_query_q = query_q[:, mid_frame_idx]  # [B, C, H, W]
-        mid_query_q = mid_query_q.view(*mid_query_q.shape[:2], -1)  # [B, C, H * W]
+        mid_query_q = query_q[:, mid_frame_idx]  # [B, Cq, H, W]
+        mid_query_q = mid_query_q.view(*mid_query_q.shape[:2], -1)  # [B, Cq, H * W]
 
         mid_v = transformer(mid_query_q, support_k, support_v)  # [B, Cv, H * W]
 
-        query_k = split_batch_frame(query_k)
-        mid_query_k = query_k[:, mid_frame_idx]
+        query_k = split_batch_frame(query_k)  # [B, F, Ck, H, W]
+        mid_query_k = query_k[:, mid_frame_idx]  # [B, Ck, H, W]
         mid_query_k = mid_query_k.view(*mid_query_k.shape[:2], -1)  # [B, Ck, H * W]
         query_q = merge_FWH(query_q)  # [B, Cq, F * H * W]
 
         V = transformer(query_q, mid_query_k, mid_v)  # [B, Cv, F*H*W]
         V = split_FWH(V, self.feature_shape)  # [B, F, Cv, H, W]
 
-        query_r4 = self.conv_q(query_r4)
-        V = merge_batch_frame(V)
-        query_r4 = torch.cat([V, query_r4], dim=1)
+        query_r4 = self.conv_q(query_r4)  # [B * F, Cv, H, W]
+        V = merge_batch_frame(V)  # [B * F, Cv, H, W]
+        query_r4 = torch.cat([V, query_r4], dim=1)  # [B * F, C, H, W]
 
         mask = self.decoder(query_r4, query_r3, query_r2, query_in_f)
         mask = self.sigmoid(mask)

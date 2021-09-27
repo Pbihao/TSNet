@@ -28,6 +28,7 @@ class VosDataset(Dataset):
         self.ytvos = YTVOS(self.ann_file)
         self.vid_infos = self.ytvos.vids
         self.load_annotations()
+        print("Data set index:   {:d}.".format(1))
 
         if not valid:
             self.category_list = [i for i in range(1, num_of_all_classes + 1)
@@ -96,24 +97,24 @@ class VosDataset(Dataset):
         return self.length
 
     def __getitem__(self, item):
-        list_idx = item // self.sample_per_category
-        vid_set = self.category_vid_set[list_idx]
+        category_idx = item // self.sample_per_category
+        vid_set = self.category_vid_set[category_idx]
 
         query_vid = random.sample(vid_set, 1)
         support_vid = random.sample(vid_set, self.support_frame)
 
         query_frames, query_masks = self.get_ground_truth_by_class(query_vid[0],
-                                                                   self.category_list[list_idx], self.query_frame)
+                                                                   self.category_list[category_idx], self.query_frame)
         support_frames, support_masks = [], []
         for i in range(self.support_frame):
-            frame, mask = self.get_ground_truth_by_class(support_vid[i], self.category_list[list_idx], 1)
+            frame, mask = self.get_ground_truth_by_class(support_vid[i], self.category_list[category_idx], 1)
             support_frames += frame
             support_masks += mask
 
         if self.transforms is not None:
             query_frames, query_masks = self.transforms(query_frames, query_masks)
             support_frames, support_masks = self.transforms(support_frames, support_masks, support=True)
-        return query_frames, query_masks, support_frames, support_masks, self.category_list[list_idx]
+        return query_frames, query_masks, support_frames, support_masks, self.category_list[category_idx]
 
 
 if __name__ == "__main__":
