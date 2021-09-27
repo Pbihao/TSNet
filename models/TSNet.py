@@ -74,7 +74,6 @@ class TSNet(nn.Module):
 
         self.feature_shape = None
 
-    # 
     def forward(self, query_img, support_img, support_mask):
         query_img, support_img, support_mask = merge_batch_frame(query_img, support_img, support_mask)
         query_r4, query_r3, query_r2, query_c1, query_in_f = self.encoder(query_img)
@@ -84,8 +83,8 @@ class TSNet(nn.Module):
         query_q, query_k, query_v = self.query_qkv(query_r4)
         self.feature_shape = tuple(query_q.shape[-2:])
 
-        support_k = merge_FWH(support_k)
-        support_v = merge_FWH(support_v)
+        support_k = merge_FWH(support_k)  # [B, Ck, F * H * W]
+        support_v = merge_FWH(support_v)  # [B, Cv, F * H * W]
 
         query_q = split_batch_frame(query_q)  # [B, F, Cq, H, W]
         mid_frame_idx = query_q.shape[1] // 2

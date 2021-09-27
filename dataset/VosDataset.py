@@ -28,7 +28,7 @@ class VosDataset(Dataset):
         self.ytvos = YTVOS(self.ann_file)
         self.vid_infos = self.ytvos.vids
         self.load_annotations()
-        print("Data set index:   {:d}.".format(1))
+        print("Data set index:   {:d}.".format(self.valid_idx))
 
         if not valid:
             self.category_list = [i for i in range(1, num_of_all_classes + 1)
