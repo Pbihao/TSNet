@@ -14,6 +14,7 @@ def transformer(Q, K, V):
     C = Q.shape[1]
     P = torch.bmm(K.permute(0, 2, 1), Q)
     P = P / math.sqrt(C)
+    P = torch.softmax(P, dim=1)
     M = torch.bmm(V, P)
     return M
 
