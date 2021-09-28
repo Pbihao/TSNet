@@ -19,7 +19,7 @@ from tqdm import tqdm
 
 def open_log_file(log_path=None):
     if log_path is None:
-        log_path = os.path.join(os.getcwd(), 'snapshots', 'log.txt')
+        log_path = os.path.join(args.snapshots_dir, 'log.txt')
     log_dir = os.path.split(log_path)[0]
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -45,6 +45,7 @@ def train(open_log=True, checkpoint=False, best_model=False):
     :param checkpoint:  set True to start train from last checkpoint
     :return:
     """
+    args.snapshots_dir = os.path.join(args.snapshots_dir, "group_idx_{:d}".format(args.valid_idx))
 
     if open_log:
         open_log_file()
