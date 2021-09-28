@@ -31,10 +31,10 @@ class VosDataset(Dataset):
         print("Data set index:   {:d}.".format(self.valid_idx))
 
         if not valid:
-            self.category_list = [i for i in range(1, num_of_all_classes + 1)
+            self.category_list = [i + 1 for i in range(num_of_all_classes)
                                   if i % num_of_per_group != (valid_idx - 1)]
         else:
-            self.category_list = [i for i in range(1, num_of_all_classes + 1)
+            self.category_list = [i + 1 for i in range(num_of_all_classes)
                                   if i % num_of_per_group == (valid_idx - 1)]
 
         self.category_vid_set = []
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     # from dataset.Transform import Transform
     # transform = Transform(args.input_size)
-    ytvos = VosDataset()
+    ytvos = VosDataset(valid=True)
     for i in range(len(ytvos)):
         video_query_img, video_query_mask, new_support_img, new_support_mask, idx = ytvos[i]
         print("id:", i)

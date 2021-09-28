@@ -104,8 +104,8 @@ def train(open_log=True, checkpoint=False, best_model=False):
 
         eval_measure = Measure_Log(['boundary', 'iou'],
                                    "The scores of boundary and iou measures of Epoch {:d}".format(epoch))
+        model.eval()
         with torch.no_grad():
-            model.eval()
             for query_img, query_mask, support_img, support_mask, idx in tqdm(valid_loader):
                 query_img, query_mask, support_img, support_mask = turn_on_cuda(query_img), turn_on_cuda(query_mask), \
                                                                    turn_on_cuda(support_img), turn_on_cuda(support_mask)
