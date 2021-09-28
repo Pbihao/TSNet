@@ -25,6 +25,11 @@ class Measure_Log(EasyDict):
             self[param] += values[idx]
         self.N += 1
 
+        if self.print_step and self.N % 100 == 0:
+            print("~~>: The scores of boundary and iou measures at steep {:d} :".format(self.N))
+            for param in self.params:
+                print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.N))
+
     def get_average(self, params=None):
         result = EasyDict()
         if params is None:
@@ -35,7 +40,7 @@ class Measure_Log(EasyDict):
 
     def print_average(self):
         if self.info is not None:
-            print("~~~~:", self.info, ":")
+            print("~~>", self.info, ":")
         for param in self.params:
             print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.N))
 

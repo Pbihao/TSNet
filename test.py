@@ -66,7 +66,7 @@ def test(open_log=True):
     print('\n==> Start Testing ... ')
 
     eval_measure = Measure_Log(['boundary', 'iou'],
-                               "The scores of boundary and iou measures of Epoch {:d}".format(epoch))
+                               "The scores of boundary and iou measures")
     with torch.no_grad():
         model.eval()
         for query_imgs, query_masks, support_img, support_mask, idx in tqdm(test_dataloader):
@@ -87,4 +87,4 @@ def test(open_log=True):
 
 
 if __name__ == "__main__":
-    test(open_log=False)
+    test()
