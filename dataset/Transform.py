@@ -3,6 +3,9 @@ import numpy as np
 import cv2
 import os
 from PIL import Image
+import random
+import imgaug.augmenters as iaa
+from imgaug.augmentables.segmaps import SegmentationMapsOnImage
 
 
 class Compose(object):
@@ -20,13 +23,6 @@ class Compose(object):
         return imgs, annos
 
 
-class AddAxis(object):
-    def __call__(self, imgs, annos):
-        for idx, anno in enumerate(annos):
-            annos[idx] = anno[:,:,np.newaxis]
-        return imgs, annos
-
-
 class Transpose(object):
     """
     transpose the image and mask
@@ -39,6 +35,79 @@ class Transpose(object):
             timgs = [np.transpose(img, [1, 0, 2]) for img in imgs]
             tannos = [np.transpose(anno, [1, 0, 2]) for anno in annos]
             return timgs, tannos
+
+
+class RandomAffine(object):
+    """
+    Affine Transformation to each frame
+    """
+    def __call__(self, imgs, annos):
+        seq = iaa.Sequential([
+            iaa.Crop(percent=(0.0, 0.1), keep_size=True),
+            iaa.Affine(scale=(0.95, 1.05), shear=(-10, 10), rotate=(-15, 15))
+        ])
+        seq = seq.to_deterministic()
+        num = len(imgs)
+        for idx in range(1, num):
+            img = imgs[idx]
+            anno = annos[idx]
+            segmap = SegmentationMapsOnImage(anno, shape=img.shape)
+            img_aug, segmap_aug = seq(image=img, segmentation_maps=segmap)
+            imgs[idx] = img_aug
+            annos[idx] = segmap_aug.get_arr()
+        return imgs, annos
+
+
+class AdditiveNoise(object):
+    """
+    sum additive noise
+    """
+    def __init__(self, delta=5.0):
+        self.delta = delta
+        assert delta > 0.0
+
+    def __call__(self, imgs, annos):
+        v = np.random.uniform(-self.delta, self.delta)
+        for id, img in enumerate(imgs):
+            imgs[id] += v
+        return imgs, annos
+
+
+class RandomContrast(object):
+    """
+    randomly modify the contrast of each frame
+    """
+    def __init__(self, lower=0.97, upper=1.03):
+        self.lower = lower
+        self.upper = upper
+        assert self.lower <= self.upper
+        assert self.lower > 0
+
+    def __call__(self, imgs, annos):
+        v = np.random.uniform(self.lower, self.upper)
+        for id, img in enumerate(imgs):
+            imgs[id] *= v
+        return imgs, annos
+
+
+class RandomMirror(object):
+    """
+    Randomly horizontally flip the video volume
+    """
+    def __init__(self):
+        pass
+
+    def __call__(self, imgs, annos):
+        v = random.randint(0, 1)
+        if v == 0:
+            return imgs, annos
+        sample = imgs[0]
+        h, w = sample.shape[:2]
+        for id, img in enumerate(imgs):
+            imgs[id] = img[:, ::-1, :]
+        for id, anno in enumerate(annos):
+            annos[id] = anno[:, ::-1, :]
+        return imgs, annos
 
 
 class ToFloat(object):
@@ -88,6 +157,38 @@ class Rescale(object):
         return imgs, annos
 
 
+class Stack(object):
+
+    """
+    stack adjacent frames into input tensors
+    """
+
+    def __call__(self, imgs, annos):
+
+        num_img = len(imgs)
+        num_anno = len(annos)
+
+        h, w, = imgs[0].shape[:2]
+
+        assert num_img == num_anno
+        img_stack = np.stack(imgs, axis=0)
+        anno_stack = np.stack(annos, axis=0)
+
+        return img_stack, anno_stack
+
+
+class ToTensor(object):
+    """
+    convert to torch.Tensor
+    """
+    def __call__(self, imgs, annos):
+        imgs = torch.from_numpy(imgs.copy())
+        annos = torch.from_numpy(annos.astype(np.uint8, copy=True)).float()
+        imgs = imgs.permute(0, 3, 1, 2).contiguous()
+        annos = annos.permute(0, 3, 1, 2).contiguous()
+        return imgs, annos
+
+
 class Normalize(object):
 
     def __init__(self):
@@ -102,28 +203,17 @@ class Normalize(object):
         return imgs, annos
 
 
-class Stack(object):
-    """
-    stack adjacent frames into input tensors
-    """
+class ReverseClip(object):
+
     def __call__(self, imgs, annos):
-        num_img = len(imgs)
-        num_anno = len(annos)
-        assert num_img == num_anno
-        img_stack = np.stack(imgs, axis=0)
-        anno_stack = np.stack(annos, axis=0)
-        return img_stack, anno_stack
+
+        return imgs[::-1], annos[::-1]
 
 
-class ToTensor(object):
-    """
-    convert to torch.Tensor
-    """
+class AddAxis(object):
     def __call__(self, imgs, annos):
-        imgs = torch.from_numpy(imgs.copy())
-        annos = torch.from_numpy(annos.astype(np.uint8, copy=True)).float()
-        imgs = imgs.permute(0, 3, 1, 2).contiguous()
-        annos = annos.permute(0, 3, 1, 2).contiguous()
+        for idx, anno in enumerate(annos):
+            annos[idx] = anno[:,:,np.newaxis]
         return imgs, annos
 
 
@@ -183,6 +273,43 @@ class Support_crop(object):
             dst_imgs.append(img)
             dst_annos.append(ann)
         return dst_imgs, dst_annos
+
+
+class TrainTransform(object):
+
+    def __init__(self, size):
+        self.transform = Compose([
+            AddAxis(),
+            Transpose(),
+            RandomAffine(),
+            ToFloat(),
+            RandomContrast(),
+            AdditiveNoise(),
+            RandomMirror(),
+            Rescale(size),
+            Normalize(),
+            Stack(),
+            ToTensor(),
+        ])
+
+    def __call__(self, imgs, annos, support=False):
+        return self.transform(imgs, annos)
+
+
+class TestTransform(object):
+
+    def __init__(self, size):
+        self.transform = Compose([
+            AddAxis(),
+            ToFloat(),
+            Rescale(size),
+            Normalize(),
+            Stack(),
+            ToTensor(),
+        ])
+
+    def __call__(self, imgs, annos, support=False):
+        return self.transform(imgs, annos)
 
 
 class Transform(object):

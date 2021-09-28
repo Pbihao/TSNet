@@ -7,7 +7,7 @@ import sys
 from utils.Logger import Logger
 from utils.optimer import get_optimizer
 from utils.store import load_checkpoint
-from dataset.Transform import Transform
+from dataset.Transform import Transform, TrainTransform, TestTransform
 from dataset.VosDataset import VosDataset
 from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
@@ -66,8 +66,10 @@ def train(open_log=True, checkpoint=False, best_model=False):
 
     print('\n==> Preparing dataset ... ')
     transform = Transform(args.input_size)
-    train_dataset = VosDataset(transforms=transform)
-    valid_dataset = VosDataset(valid=True, transforms=transform)
+    train_transform = TrainTransform(args.input_size)
+    test_transform = TestTransform(args.input_size)
+    train_dataset = VosDataset(transforms=train_transform)
+    valid_dataset = VosDataset(valid=True, transforms=test_transform)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
                               num_workers=args.num_workers, drop_last=True)
     valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False, num_workers=2)
