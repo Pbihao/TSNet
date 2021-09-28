@@ -5,8 +5,9 @@ from easydict import EasyDict
 
 
 class Measure_Log(EasyDict):
-    def __init__(self, params=None, info=None):
+    def __init__(self, params=None, info=None, print_step=False):
         super(Measure_Log, self).__init__()
+        self.print_step = print_step
         self.params = params
         self.info = info
         self.N = 0

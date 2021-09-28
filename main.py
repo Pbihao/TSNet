@@ -2,6 +2,7 @@ import argparse
 import os
 from train import train
 from args import args
+from test import test
 
 
 if __name__ == '__main__':
@@ -15,3 +16,5 @@ if __name__ == '__main__':
             train(checkpoint=True)
         else:
             train()
+    else:
+        test()
