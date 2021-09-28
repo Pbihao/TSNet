@@ -126,5 +126,6 @@ def train(open_log=True, checkpoint=False, best_model=False):
 
     close_log_file()
 
+
 if __name__ == "__main__":
     train(open_log=False)

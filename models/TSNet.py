@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -112,5 +114,12 @@ class TSNet(nn.Module):
 
 
 if __name__ == "__main__":
-    a = torch.ones((1, 4, 3, 241, 421))
-    TSNet().forward(a, a, a[:, :, 1, :].unsqueeze(2))
+    tsnet = TSNet()
+
+    tsnet.eval()
+    imgs = torch.load(os.path.join(os.getcwd(), "tmp", "Tensor", "img.pt"))
+    query_img, query_mask, support_img, support_mask = imgs['qi'], imgs['qm'], imgs['si'], imgs['sm']
+    query_img, query_mask, support_img, support_mask = query_img.cpu(), query_mask.cpu(), support_img.cpu(), support_mask.cpu()
+    mask = tsnet(query_img, support_img, support_mask)
+    print(mask.shape)
+

@@ -126,9 +126,9 @@ if __name__ == "__main__":
         for id, img in enumerate(imgs):
             Image.fromarray(img).save(os.path.join(path, str(id) + '.png'))
 
-    from dataset.Transform import Transform
-    transform = Transform(args.input_size)
-    ytvos = VosDataset(transforms=transform)
+    # from dataset.Transform import Transform
+    # transform = Transform(args.input_size)
+    ytvos = VosDataset()
     for i in range(len(ytvos)):
         video_query_img, video_query_mask, new_support_img, new_support_mask, idx = ytvos[i]
         print("id:", i)
