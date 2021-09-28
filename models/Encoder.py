@@ -8,7 +8,7 @@ from torchvision import models
 class ResBlock(nn.Module):
     def __init__(self, indim, outdim=None, stride=1):
         super(ResBlock, self).__init__()
-        if outdim:
+        if outdim is None:
             outdim = indim
         if indim == outdim and stride == 1:
             self.downsample = None
