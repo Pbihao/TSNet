@@ -39,13 +39,14 @@ def turn_on_cuda(x):
     return x
 
 
-def train(open_log=True, checkpoint=False, best_model=False):
+def train(open_log=True, checkpoint=False, pretrained_model=False):
     """
+    :param pretrained_model: set True to train from pretrained model
     :param open_log:    set True to write all infos to log file
     :param checkpoint:  set True to start train from last checkpoint
     :return:
     """
-
+    args.snapshots_dir = os.path.join(args.snapshots_dir, 'valid_idx_{:d}'.format(args.valid_idx))
     if open_log:
         open_log_file()
 
@@ -55,7 +56,8 @@ def train(open_log=True, checkpoint=False, best_model=False):
     model = turn_on_cuda(model)
     optimizer = get_optimizer(model)
     start_epoch = 0
-    if best_model:
+    best_mean_iou = 0
+    if pretrained_model:
         load_model(model)
     elif checkpoint:
         start_epoch, start_loss = load_checkpoint(model, optimizer)
@@ -74,7 +76,6 @@ def train(open_log=True, checkpoint=False, best_model=False):
     print('\n==> Setting loss')
     criterion = lambda pred, target: [cross_entropy_loss(pred, target), mask_iou_loss(pred, target)]
     print('\n==> Start training ... ')
-    best_mean_iou = 0
     for epoch in range(start_epoch, args.max_epoch):
         print('\n==> Training epoch {:d}'.format(epoch))
 
@@ -116,9 +117,10 @@ def train(open_log=True, checkpoint=False, best_model=False):
         eval_measure.print_average()
         save_checkpoint(model, epoch, mean_loss, optimizer)
         mean_iou = eval_measure.get_average(['iou']).iou
+        mean_boundary = eval_measure.get_average(['boundary']).boundary
         if mean_iou > best_mean_iou:
             best_mean_iou = mean_iou
-            save_model(model)
+            save_model(model, mean_boundary, mean_iou)
             print("    < Best model update at epoch {:d}. >".format(epoch))
 
     close_log_file()

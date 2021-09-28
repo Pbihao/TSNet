@@ -10,7 +10,7 @@ import numpy as np
 
 
 class VosDataset(Dataset):
-    def __init__(self, valid=False, transforms=None,
+    def __init__(self, valid=False, transforms=None, test=False,
                  data_dir=args.data_dir, num_of_all_classes=args.num_of_all_classes, query_frame=args.query_frame,
                  sample_per_category=args.sample_per_category, support_frame=args.support_frame,
                  num_of_per_group=args.num_of_per_group, valid_idx=args.valid_idx):

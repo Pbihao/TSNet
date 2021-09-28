@@ -9,8 +9,8 @@ if __name__ == '__main__':
         os.mkdir(args.data_dir)
 
     if args.train:
-        if args.train_from_best_model:
-            train(best_model=True)
+        if args.train_from_pretrained_model:
+            train(pretrained_model=True)
         elif args.train_from_last_checkpoint:
             train(checkpoint=True)
         else:
