@@ -24,13 +24,14 @@ class VosDataset(Dataset):
         self.valid_idx = valid_idx
         self.support_frame = support_frame
         self.query_frame = query_frame
+        self.test = test
 
         self.ytvos = YTVOS(self.ann_file)
         self.vid_infos = self.ytvos.vids
         self.load_annotations()
         print("Data set index:   {:d}.".format(self.valid_idx))
 
-        if not valid:
+        if not valid and not test:
             self.category_list = [i + 1 for i in range(num_of_all_classes)
                                   if i % num_of_per_group != (valid_idx - 1)]
         else:
@@ -41,7 +42,21 @@ class VosDataset(Dataset):
         for category in self.category_list:
             tmp_list = sorted(self.ytvos.getVidIds(catIds=category))
             self.category_vid_set.append(tmp_list)
-        self.length = len(self.category_list) * sample_per_category
+
+        if not self.test:
+            self.length = len(self.category_list) * sample_per_category
+        else:
+            self.length = 0
+            self.test_support_category_vid_set = []
+            self.test_support_frame = None
+            self.test_support_mask = None
+
+            for category_idx in range(len(self.category_list)):
+                self.test_support_category_vid_set.append(random.sample(self.category_vid_set[category_idx],
+                                                                        self.support_frame))
+                for category_vid in self.test_support_category_vid_set[category_idx]:
+                    self.category_vid_set[category_idx].remove(category_vid)
+                self.length += len(self.category_vid_set[category_idx])
 
     def get_ground_truth_by_class(self, vid, category, frames_num=None):
         vid_info = self.vid_infos[vid]
@@ -96,7 +111,7 @@ class VosDataset(Dataset):
     def __len__(self):
         return self.length
 
-    def __getitem__(self, item):
+    def get_train_item(self, item):
         category_idx = item // self.sample_per_category
         vid_set = self.category_vid_set[category_idx]
 
@@ -116,9 +131,45 @@ class VosDataset(Dataset):
             support_frames, support_masks = self.transforms(support_frames, support_masks, support=True)
         return query_frames, query_masks, support_frames, support_masks, self.category_list[category_idx]
 
+    def get_test_item(self, item):
+        id = item
+        for category_idx in range(len(self.category_list)):
+            if id >= len(self.category_vid_set[category_idx]):
+                id -= len(self.category_vid_set[category_idx])
+            else:
+                if id == 0:
+                    self.test_support_frame = []
+                    self.test_support_mask = []
+                    support_vid_set = self.test_support_category_vid_set[category_idx]
+                    for support_vid in support_vid_set:
+                        frame, mask = self.get_ground_truth_by_class(support_vid, self.category_list[category_idx], 1)
+                        self.test_support_frame.append(frame[0])
+                        self.test_support_mask.append(mask[0])
+                    if self.transforms is not None:
+                        self.test_support_frame, self.test_support_mask = \
+                            self.transforms(self.test_support_frame, self.test_support_mask, support=True)
+
+                vid = self.category_vid_set[category_idx][id]
+                query_frames, query_masks = self.get_ground_truth_by_class(vid, self.category_list[category_idx])
+
+                if self.transforms is not None:
+                    query_frames, query_masks = self.transforms(query_frames, query_masks)
+
+                return query_frames, query_masks, \
+                       self.test_support_frame, self.test_support_mask, self.category_list[category_idx]
+
+        return None
+
+    def __getitem__(self, item):
+        if not self.test:
+            return self.get_train_item(item)
+        else:
+            return self.get_test_item(item)
+
 
 if __name__ == "__main__":
     from utility import show_img
+
 
     def save(imgs, path):
         if not os.path.exists(path):
@@ -126,9 +177,11 @@ if __name__ == "__main__":
         for id, img in enumerate(imgs):
             Image.fromarray(img).save(os.path.join(path, str(id) + '.png'))
 
+
     from dataset.Transform import Transform
+
     transform = Transform(args.input_size)
-    ytvos = VosDataset(transforms=transform)
+    ytvos = VosDataset(test=True)
     for i in range(len(ytvos)):
         video_query_img, video_query_mask, new_support_img, new_support_mask, idx = ytvos[i]
         print("id:", i)

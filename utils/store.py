@@ -62,7 +62,7 @@ def load_checkpoint(model, optimizer, checkpoint_path=None):
     return epoch, loss
 
 
-def save_model(model, boundary=None, iou=None, model_path=None, as_pretrained=True):
+def save_model(model, boundary=None, iou=None, model_path=None):
     if model_path is None:
         model_path = os.path.join(args.snapshots_dir, 'checkpoint', 'best_model.pth')
     model_dir = os.path.split(model_path)[0]
@@ -74,23 +74,12 @@ def save_model(model, boundary=None, iou=None, model_path=None, as_pretrained=Tr
         'boundary': boundary
     }, model_path)
 
-    if as_pretrained:
-        pretrained_path = os.path.join(os.getcwd(), 'snapshots', 'pretrained_model')
-        if not os.path.exists(pretrained_path):
-            os.makedirs(pretrained_path)
-        pretrained_path = os.path.join(pretrained_path, 'pretrained_model.pth')
-        save_under_different_version({
-            'model_state_dict': model.state_dict(),
-            'iou': iou,
-            'boundary': boundary
-        }, pretrained_path)
 
-
-def load_model(model, pretrained_path=None):
-    if pretrained_path is None:
-        pretrained_path = os.path.join(os.getcwd(), 'snapshots', 'pretrained_model', 'pretrained_model.pth')
-    assert os.path.exists(pretrained_path)
-    model_dict = torch.load(pretrained_path)
+def load_model(model, model_path=None):
+    if model_path is None:
+        model_path = os.path.join(args.snapshots_dir, 'checkpoint', 'best_model.pth')
+    assert os.path.exists(model_path)
+    model_dict = torch.load(model_path)
     model.load_state_dict(model_dict['model_state_dict'])
     return model_dict['boundary'], model_dict['iou']
 
