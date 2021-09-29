@@ -336,6 +336,7 @@ def unnormalize_tensor_to_img(tensors: torch.Tensor):
     mean = (0.485, 0.456, 0.406)
     std = (0.229, 0.224, 0.225)
 
+    tensors = tensors.clone()
     if len(tensors.shape) == 3:
         tensors = tensors.unsqueeze(dim=0)
     images = []
