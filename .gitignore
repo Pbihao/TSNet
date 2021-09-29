@@ -19,6 +19,7 @@ eggs/
 pretrain_model/
 .eggs/
 lib/
+pretrain_model/
 lib64/
 parts/
 sdist/

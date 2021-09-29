@@ -355,10 +355,3 @@ if __name__ == "__main__":
     from dataset.VosDataset import VosDataset
     ytvos = VosDataset()
     transform = Transform((241, 425))
-    for i in range(len(ytvos)):
-        video_query_img, video_query_mask, new_support_img, new_support_mask, idx = ytvos[i]
-
-        video_query_img, video_query_mask = transform(video_query_img, video_query_mask)
-        new_support_img, new_support_mask = transform(new_support_img, new_support_mask, support=True)
-
-        print(i)

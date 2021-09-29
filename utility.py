@@ -83,3 +83,14 @@ def save_feature(feature, path):
     plt.axis('off')
     plt.colorbar()
     plt.savefig(path)
+
+
+
+
+if __name__ == "__main__":
+    from utils.model_store import *
+    from models.TSNet import *
+    model = TSNet()
+    path = os.path.join(os.getcwd(), "snapshots", 'checkpoint', 'best_model.pth')
+    model.load_state_dict(torch.load(path))
+    save_model(model, 0, 0)
