@@ -86,7 +86,7 @@ def save_feature(feature, path):
 
 
 if __name__ == "__main__":
-    from utils.store import *
+    from utils.model_store import *
     from models.TSNet import *
     model = TSNet()
     path = os.path.join(os.getcwd(), "snapshots", 'checkpoint', 'best_model.pth')

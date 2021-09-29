@@ -2,19 +2,19 @@
 # @Time  : 28/9/2021 8:52 PM
 import os
 import torch
-from utils.store import get_model_para_number
+from utils.model_store import get_model_para_number
 from models.TSNet import TSNet
 from args import args
 import sys
 from utils.Logger import Logger
 from utils.optimer import get_optimizer
-from utils.store import load_checkpoint
+from utils.model_store import load_checkpoint
 from dataset.Transform import Transform
 from dataset.VosDataset import VosDataset
 from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
 from utils.Measure_Log import Measure_Log
-from utils.store import *
+from utils.model_store import *
 from utils.evalution import eval_boundary_iou
 from tqdm import tqdm
 
@@ -43,10 +43,7 @@ def turn_on_cuda(x):
 
 def test(open_log=True):
     """
-    :param pretrained_model: set True to train from pretrained model
     :param open_log:    set True to write all infos to log file
-    :param checkpoint:  set True to start train from last checkpoint
-    :return:
     """
     args.snapshots_dir = os.path.join(args.snapshots_dir, 'valid_idx_{:d}'.format(args.valid_idx))
     if open_log:
@@ -79,8 +76,8 @@ def test(open_log=True):
                 pred_map = pred_map.squeeze(2)
                 query_mask = query_mask.squeeze(2)
 
-                boundary, iou = eval_boundary_iou(query_mask, pred_map)
-                eval_measure.add([boundary, iou])
+                boundary, iou, num = eval_boundary_iou(query_mask, pred_map)
+                eval_measure.add([boundary, iou], num=num)
 
     eval_measure.print_average()
     close_log_file()

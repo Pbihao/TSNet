@@ -10,7 +10,8 @@ class Measure_Log(EasyDict):
         self.print_step = print_step
         self.params = params
         self.info = info
-        self.N = 0
+        self.step = 0
+        self.total = 0
         for param in params:
             self[param] = 0
 
@@ -18,31 +19,31 @@ class Measure_Log(EasyDict):
         for param in self.params:
             self[param] = 0
 
-    def add(self, values, params=None):
+    def add(self, values, params=None, num=None):
         if params is None:
             params = self.params
         for idx, param in enumerate(params):
             self[param] += values[idx]
-        self.N += 1
-
-        if self.print_step and self.N % 100 == 0:
+        self.step += 1
+        self.total += num if num is not None else 1
+        if self.print_step and self.step % 100 == 0:
             print("~~>: The scores of boundary and iou measures at steep {:d} :".format(self.N))
             for param in params:
-                print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.N))
+                print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.total))
 
     def get_average(self, params=None):
         result = EasyDict()
         if params is None:
             params = self.params
         for parm in params:
-            result[parm] = self[parm] / self.N
+            result[parm] = self[parm] / self.total
         return result
 
     def print_average(self):
         if self.info is not None:
             print("~~>", self.info, ":")
         for param in self.params:
-            print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.N))
+            print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.total))
 
 
 
