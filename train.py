@@ -57,8 +57,9 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
     optimizer = get_optimizer(model)
     start_epoch = 0
     best_mean_iou = 0
+    best_mean_boundary = 0
     if pretrained_model:
-        _, best_mean_iou = load_model(model)
+        best_mean_boundary, best_mean_iou = load_model(model)
     elif checkpoint:
         start_epoch, start_loss = load_checkpoint(model, optimizer)
         print("\n==> Training from last checkpoint ...")
@@ -120,10 +121,12 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
         mean_boundary = eval_measure.get_average(['boundary']).boundary
         if mean_iou > best_mean_iou:
             best_mean_iou = mean_iou
+            best_mean_boundary = best_mean_boundary
             save_model(model, mean_boundary, mean_iou)
             print("    < Best model update at epoch {:d}. >".format(epoch))
 
     close_log_file()
+
 
 if __name__ == "__main__":
     train(open_log=False)

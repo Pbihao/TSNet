@@ -156,7 +156,8 @@ class VosDataset(Dataset):
                     query_frames, query_masks = self.transforms(query_frames, query_masks)
 
                 return query_frames, query_masks, \
-                       self.test_support_frame, self.test_support_mask, self.category_list[category_idx]
+                       self.test_support_frame, self.test_support_mask, self.category_list[category_idx], \
+                       os.path.split(self.vid_infos[vid]['file_names'][0])[0]
 
         return None
 
@@ -183,7 +184,7 @@ if __name__ == "__main__":
     transform = Transform(args.input_size)
     ytvos = VosDataset(test=True)
     for i in range(len(ytvos)):
-        video_query_img, video_query_mask, new_support_img, new_support_mask, idx = ytvos[i]
+        video_query_img, video_query_mask, new_support_img, new_support_mask, idx, name = ytvos[i]
         print("id:", i)
 
         # save(video_query_img, os.path.join(os.getcwd(), "tmp", "video_query_img"))
