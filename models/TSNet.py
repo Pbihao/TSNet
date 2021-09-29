@@ -64,7 +64,7 @@ class TSNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.num_feature = 1024
-        self.num_value = 1024
+        self.num_value = 512
         self.num_key = 128
 
         self.encoder = Encoder()
@@ -72,7 +72,7 @@ class TSNet(nn.Module):
         self.sigmoid = nn.Sigmoid()
         self.support_qkv = QueryKeyValue(in_dim=self.num_feature, key_dim=self.num_key, value_dim=self.num_value)
         self.query_qkv = QueryKeyValue(in_dim=self.num_feature, key_dim=self.num_key, value_dim=self.num_value)
-        # self.conv_q = nn.Conv2d(self.num_feature, self.num_value, kernel_size=1, stride=1, padding=0)
+        self.conv_q = nn.Conv2d(self.num_feature, self.num_value, kernel_size=1, stride=1, padding=0)
 
         self.feature_shape = None
 
@@ -103,10 +103,10 @@ class TSNet(nn.Module):
         V = transformer(query_q, mid_query_k, mid_v)  # [B, Cv, F*H*W]
         V = split_FWH(V, self.feature_shape)  # [B, F, Cv, H, W]
 
-        # query_r4 = self.conv_q(query_r4)  # [B * F, Cv, H, W]
+        query_r4 = self.conv_q(query_r4)  # [B * F, Cv, H, W]
         V = merge_batch_frame(V)  # [B * F, Cv, H, W]
-        query_r4 = query_r4 * V
-        # query_r4 = torch.cat([V, query_r4], dim=1)  # [B * F, C, H, W]
+        # query_r4 = query_r4 * V
+        query_r4 = torch.cat([V, query_r4], dim=1)  # [B * F, C, H, W]
 
         mask = self.decoder(query_r4, query_r3, query_r2, query_in_f)
         mask = self.sigmoid(mask)
@@ -118,9 +118,8 @@ if __name__ == "__main__":
     tsnet = TSNet()
 
     tsnet.eval()
-    imgs = torch.load(os.path.join(os.getcwd(), "tmp", "Tensor", "img.pt"))
-    query_img, query_mask, support_img, support_mask = imgs['qi'], imgs['qm'], imgs['si'], imgs['sm']
-    query_img, query_mask, support_img, support_mask = query_img.cpu(), query_mask.cpu(), support_img.cpu(), support_mask.cpu()
-    mask = tsnet(query_img, support_img, support_mask)
-    print(mask.shape)
+
+    img = torch.randn((1, 5, 3, 22, 22))
+    tsnet.forward(img, img, img[:, :, 1, :].unsqueeze(2))
+
 

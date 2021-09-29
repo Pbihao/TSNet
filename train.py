@@ -7,7 +7,7 @@ import sys
 from utils.Logger import Logger
 from utils.optimer import get_optimizer
 from utils.model_store import load_checkpoint
-from dataset.Transform import Transform
+from dataset.Transform import Transform, TrainTransform, TestTransform
 from dataset.VosDataset import VosDataset
 from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
