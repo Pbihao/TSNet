@@ -62,7 +62,7 @@ class TSNet(nn.Module):
     def __init__(self):
         super().__init__()
         self.num_feature = 1024
-        self.num_value = 1024
+        self.num_value = 512
         self.num_key = 128
 
         self.encoder = Encoder()
