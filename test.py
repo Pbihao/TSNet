@@ -69,7 +69,7 @@ def save_predicts(preds_map, query_map, name, id):
         cv2.imwrite(pred_path, pred)
 
 
-def test(open_log=True):
+def test(open_log=True, save_prediction_maps=False):
     """
     :param open_log:    set True to write all infos to log file
     """
@@ -80,7 +80,7 @@ def test(open_log=True):
     print('==> Test Model: ', args.arch)
     model = TSNet()
     print('    Number of total params: %.2fM.' % (get_model_para_number(model) / 1000000))
-    load_model(model)
+    # load_model(model)
     model = turn_on_cuda(model)
 
     print('\n==> Preparing dataset ... ')
@@ -105,7 +105,8 @@ def test(open_log=True):
                 pred_map = pred_map.squeeze(2)
                 query_mask = query_mask.squeeze(2)
 
-                save_predicts(pred_map, query_mask, name[0], id)
+                if save_prediction_maps:
+                    save_predicts(pred_map, query_mask, name[0], id)
                 boundary, iou, num = eval_boundary_iou(query_mask, pred_map)
                 eval_measure.add([boundary, iou], num=num)
 

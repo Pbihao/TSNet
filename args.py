@@ -17,9 +17,10 @@ def get_arguments():
     # set to swap models
     parser.add_argument("--train", action='store_true')  # test -> train
     parser.add_argument("--debug", action='store_true')  # run -> debug
-    parser.add_argument("--turn_off_cuda", action='store_true')  # turn off cuda
-    parser.add_argument("--train_from_last_checkpoint", action='store_true')
-    parser.add_argument("--train_from_pretrained_model", action='store_true')
+    parser.add_argument("--turn_off_cuda", action='store_true')  # cuda on -> off
+    parser.add_argument("--save_prediction_maps", action='store_true')  # save prediction
+    parser.add_argument("--train_from_last_checkpoint", action='store_true')  # checkpoint
+    parser.add_argument("--train_from_pretrained_model", action='store_true')  # best model
 
     # parameters of dataset
     parser.add_argument('--input_size', type=list, default=[241, 425])  # size of input images

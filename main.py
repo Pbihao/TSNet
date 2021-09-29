@@ -17,4 +17,4 @@ if __name__ == '__main__':
         else:
             train()
     else:
-        test()
+        test(save_prediction_maps=args.save_prediction_maps)
