@@ -27,7 +27,7 @@ class Measure_Log(EasyDict):
         self.step += 1
         self.total += num if num is not None else 1
         if self.print_step and self.step % 100 == 0:
-            print("~~>: The scores of boundary and iou measures at steep {:d} :".format(self.N))
+            print("~~>: The scores of boundary and iou measures at steep {:d} :".format(self.step))
             for param in params:
                 print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.total))
 
