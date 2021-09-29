@@ -66,7 +66,7 @@ def test(open_log=True):
     print('\n==> Start Testing ... ')
 
     eval_measure = Measure_Log(['boundary', 'iou'],
-                               "The scores of boundary and iou measures")
+                               "The scores of boundary and iou measures", print_step=True)
     with torch.no_grad():
         model.eval()
         for query_imgs, query_masks, support_img, support_mask, idx in tqdm(test_dataloader):

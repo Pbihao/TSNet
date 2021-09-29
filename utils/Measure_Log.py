@@ -21,13 +21,13 @@ class Measure_Log(EasyDict):
     def add(self, values, params=None):
         if params is None:
             params = self.params
-        for idx, param in enumerate(self.params):
+        for idx, param in enumerate(params):
             self[param] += values[idx]
         self.N += 1
 
         if self.print_step and self.N % 100 == 0:
             print("~~>: The scores of boundary and iou measures at steep {:d} :".format(self.N))
-            for param in self.params:
+            for param in params:
                 print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.N))
 
     def get_average(self, params=None):
