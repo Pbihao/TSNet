@@ -20,6 +20,7 @@ pretrain_model/
 .eggs/
 lib/
 pretrain_model/
+.idea/
 lib64/
 parts/
 sdist/
