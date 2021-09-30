@@ -117,7 +117,7 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
         mean_iou = evaluation.get_mean_iou()
         if mean_iou > best_mean_iou:
             best_mean_iou = mean_iou
-            save_model(model, evaluation.get_f_score(), evaluation.get_mean_j_score())
+            save_model(model, evaluation.get_mean_f_score(), evaluation.get_mean_j_score())
             print("    < Best model update at epoch {:d}. >".format(epoch))
 
     close_log_file()
