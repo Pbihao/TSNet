@@ -42,8 +42,9 @@ def turn_on_cuda(x):
     return x
 
 
-def save_predicts(preds_map, query_map, name, id):
+def save_predicts(preds_map, query_map, name, id, category):
     """
+    :param category: what is the category for the mask
     :param preds_map:  normal [B, F, H, W]
     :param query_map:  normal [B, F, H, W]
     :param name: Str the name of folder
@@ -55,8 +56,8 @@ def save_predicts(preds_map, query_map, name, id):
     preds_map = preds_map.type(torch.int).detach().cpu().numpy()
     query_map = query_map.type(torch.int).detach().cpu().numpy()
     for idx in range(preds_map.shape[0]):
-        pred = preds_map[idx].astype(np.uint8) * 255
-        query = query_map[idx].astype(np.uint8) * 255
+        pred = preds_map[idx].astype(np.uint8) * category
+        query = query_map[idx].astype(np.uint8) * category
         pred_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Predictions', name)
         query_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', name)
         if not os.path.exists(pred_dir):
@@ -105,7 +106,7 @@ def test(open_log=True, save_prediction_maps=False):
                 query_mask = query_mask.squeeze(2)
 
                 if save_prediction_maps:
-                    save_predicts(pred_map, query_mask, name[0], id)
+                    save_predicts(pred_map, query_mask, name[0], id, idx[0])
                 evaluation.add(idx, query_mask, pred_map)
 
     evaluation.print_average("The score of the whole test process")
