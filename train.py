@@ -75,10 +75,11 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
     valid_dataset = VosDataset(valid=True, transforms=test_transform)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
                               num_workers=args.num_workers, drop_last=True)
-    valid_loader = DataLoader(valid_dataset, batch_size=1, shuffle=False, num_workers=2)
+    valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False, num_workers=2)
 
     print('\n==> Setting loss')
-    criterion = lambda pred, target, bootstrap=1: [cross_entropy_loss(pred, target, bootstrap), mask_iou_loss(pred, target)]
+    criterion = lambda pred, target, bootstrap=1: [cross_entropy_loss(pred, target, bootstrap),
+                                                   mask_iou_loss(pred, target)]
     print('\n==> Start training ... ')
     for epoch in range(start_epoch, args.max_epoch):
         print('\n==> Training epoch {:d}'.format(epoch))
