@@ -53,6 +53,7 @@ def save_predicts(preds_map, query_map, name, id, category):
     preds_map = preds_map.squeeze(0)
     query_map = query_map.squeeze(0)
     preds_map = preds_map > args.pred_thresh
+    query_map = query_map > args.pred_thresh
     preds_map = preds_map.type(torch.int).detach().cpu().numpy()
     query_map = query_map.type(torch.int).detach().cpu().numpy()
     for idx in range(preds_map.shape[0]):
