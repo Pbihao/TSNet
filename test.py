@@ -106,7 +106,7 @@ def test(open_log=True, save_prediction_maps=False):
                 query_mask = query_mask.squeeze(2)
 
                 if save_prediction_maps:
-                    save_predicts(pred_map, query_mask, name[0], id, idx[0])
+                    save_predicts(pred_map, query_mask, name[0], id, idx[0].item())
                 evaluation.add(idx, query_mask, pred_map)
 
     evaluation.print_average("The score of the whole test process")
