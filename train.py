@@ -13,8 +13,8 @@ from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
 from utils.Measure_Log import Measure_Log
 from utils.model_store import *
-from utils.evalution import eval_boundary_iou
 from tqdm import tqdm
+from utils.Evaluation_Log import Evaluation_Log
 
 
 def open_log_file(log_path=None):
@@ -59,9 +59,8 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
 
     start_epoch = 0
     best_mean_iou = 0
-    best_mean_boundary = 0
     if pretrained_model:
-        best_mean_boundary, best_mean_iou = load_model(model)
+        load_model(model)
     elif checkpoint:
         start_epoch, start_loss = load_checkpoint(model, optimizer)
         print("\n==> Training from last checkpoint ...")
@@ -104,10 +103,10 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
 
         loss_measure.print_average()
         mean_loss = loss_measure.get_average(['total_loss']).total_loss
+        save_checkpoint(model, epoch, mean_loss, optimizer)
 
-        eval_measure = Measure_Log(['boundary', 'iou'],
-                                   "The scores of boundary and iou measures of Epoch {:d}".format(epoch))
         model.eval()
+        evaluation = Evaluation_Log(valid_dataset.get_category_list())
         with torch.no_grad():
             for query_img, query_mask, support_img, support_mask, idx in tqdm(valid_loader):
                 query_img, query_mask, support_img, support_mask = turn_on_cuda(query_img), turn_on_cuda(query_mask), \
@@ -116,17 +115,13 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
                 pred_map = pred_map.squeeze(2)
                 query_mask = query_mask.squeeze(2)
 
-                boundary, iou, num = eval_boundary_iou(query_mask, pred_map)
-                eval_measure.add([boundary, iou], num=num)
+                evaluation.add(idx, query_mask, pred_map)
 
-        eval_measure.print_average()
-        save_checkpoint(model, epoch, mean_loss, optimizer)
-        mean_iou = eval_measure.get_average(['iou']).iou
-        mean_boundary = eval_measure.get_average(['boundary']).boundary
+        evaluation.print_average("The score at epoch {:d}".format(epoch))
+        mean_iou = evaluation.get_mean_iou()
         if mean_iou > best_mean_iou:
             best_mean_iou = mean_iou
-            best_mean_boundary = best_mean_boundary
-            save_model(model, mean_boundary, mean_iou)
+            save_model(model, evaluation.get_mean_f_score(), evaluation.get_mean_j_score())
             print("    < Best model update at epoch {:d}. >".format(epoch))
 
     close_log_file()

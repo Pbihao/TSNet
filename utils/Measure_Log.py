@@ -5,12 +5,10 @@ from easydict import EasyDict
 
 
 class Measure_Log(EasyDict):
-    def __init__(self, params=None, info=None, print_step=False):
+    def __init__(self, params=None, info=None):
         super(Measure_Log, self).__init__()
-        self.print_step = print_step
         self.params = params
         self.info = info
-        self.step = 0
         self.total = 0
         for param in params:
             self[param] = 0
@@ -24,12 +22,7 @@ class Measure_Log(EasyDict):
             params = self.params
         for idx, param in enumerate(params):
             self[param] += values[idx]
-        self.step += 1
         self.total += num if num is not None else 1
-        if self.print_step and self.step % 100 == 0:
-            print("~~>: The scores of boundary and iou measures at steep {:d} :".format(self.step))
-            for param in params:
-                print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.total))
 
     def get_average(self, params=None):
         result = EasyDict()
@@ -44,16 +37,3 @@ class Measure_Log(EasyDict):
             print("~~>", self.info, ":")
         for param in self.params:
             print("    ", "{:<20}".format(param), ": %.4f" % (self[param] / self.total))
-
-
-
-
-
-if __name__ == "__main__":
-    log = Measure_Log(['celoss', 'sc', 'p'], "Epoch {:d}".format(2))
-    log.add([1, 2, 3])
-    log.add([2, 3, 4])
-    log.print_average()
-
-    print(log.celoss)
-    print(log.p)

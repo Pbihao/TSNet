@@ -13,10 +13,10 @@ from dataset.Transform import Transform
 from dataset.VosDataset import VosDataset
 from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
-from utils.Measure_Log import Measure_Log
 from utils.model_store import *
 from utils.evalution import eval_boundary_iou
 from tqdm import tqdm
+from utils.Evaluation_Log import Evaluation_Log
 import cv2
 
 
@@ -42,8 +42,9 @@ def turn_on_cuda(x):
     return x
 
 
-def save_predicts(preds_map, query_map, name, id):
+def save_predicts(preds_map, query_map, name, id, category):
     """
+    :param category: what is the category for the mask
     :param preds_map:  normal [B, F, H, W]
     :param query_map:  normal [B, F, H, W]
     :param name: Str the name of folder
@@ -55,8 +56,8 @@ def save_predicts(preds_map, query_map, name, id):
     preds_map = preds_map.type(torch.int).detach().cpu().numpy()
     query_map = query_map.type(torch.int).detach().cpu().numpy()
     for idx in range(preds_map.shape[0]):
-        pred = preds_map[idx].astype(np.uint8) * 255
-        query = query_map[idx].astype(np.uint8) * 255
+        pred = preds_map[idx].astype(np.uint8) * category
+        query = query_map[idx].astype(np.uint8) * category
         pred_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Predictions', name)
         query_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', name)
         if not os.path.exists(pred_dir):
@@ -80,7 +81,7 @@ def test(open_log=True, save_prediction_maps=False):
     print('==> Test Model: ', args.arch)
     model = TSNet()
     print('    Number of total params: %.2fM.' % (get_model_para_number(model) / 1000000))
-    # load_model(model)
+    load_model(model)
     model = turn_on_cuda(model)
 
     print('\n==> Preparing dataset ... ')
@@ -91,8 +92,7 @@ def test(open_log=True, save_prediction_maps=False):
 
     print('\n==> Start Testing ... ')
 
-    eval_measure = Measure_Log(['boundary', 'iou'],
-                               "The scores of boundary and iou measures", print_step=True)
+    evaluation = Evaluation_Log(test_dataset.get_category_list(), print_step=True)
     with torch.no_grad():
         model.eval()
         for query_imgs, query_masks, support_img, support_mask, idx, name in tqdm(test_dataloader):
@@ -106,11 +106,10 @@ def test(open_log=True, save_prediction_maps=False):
                 query_mask = query_mask.squeeze(2)
 
                 if save_prediction_maps:
-                    save_predicts(pred_map, query_mask, name[0], id)
-                boundary, iou, num = eval_boundary_iou(query_mask, pred_map)
-                eval_measure.add([boundary, iou], num=num)
+                    save_predicts(pred_map, query_mask, name[0], id, idx[0].item())
+                evaluation.add(idx, query_mask, pred_map)
 
-    eval_measure.print_average()
+    evaluation.print_average("The score of the whole test process")
     close_log_file()
 
 
