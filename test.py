@@ -13,10 +13,10 @@ from dataset.Transform import Transform
 from dataset.VosDataset import VosDataset
 from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
-from utils.Measure_Log import Measure_Log
 from utils.model_store import *
 from utils.evalution import eval_boundary_iou
 from tqdm import tqdm
+from utils.Evaluation_Log import Evaluation_Log
 import cv2
 
 
@@ -91,8 +91,7 @@ def test(open_log=True, save_prediction_maps=False):
 
     print('\n==> Start Testing ... ')
 
-    eval_measure = Measure_Log(['boundary', 'iou'],
-                               "The scores of boundary and iou measures", print_step=True)
+    evaluation = Evaluation_Log(test_dataset.get_category_list(), print_step=True)
     with torch.no_grad():
         model.eval()
         for query_imgs, query_masks, support_img, support_mask, idx, name in tqdm(test_dataloader):
@@ -107,10 +106,9 @@ def test(open_log=True, save_prediction_maps=False):
 
                 if save_prediction_maps:
                     save_predicts(pred_map, query_mask, name[0], id)
-                boundary, iou, num = eval_boundary_iou(query_mask, pred_map)
-                eval_measure.add([boundary, iou], num=num)
+                evaluation.add(idx, query_mask, pred_map)
 
-    eval_measure.print_average()
+    evaluation.print_average("The score of the whole test process")
     close_log_file()
 
 

@@ -48,7 +48,7 @@ class Evaluation_Log(object):
 
             self.step += 1
             if self.print_step and self.step % 100 == 0:
-                pass
+                self.print_average("The score at step {:d}".format(self.step))
 
     def get_iou(self, category):
         if category not in self.category_record or self.category_record[category].union == 0:
@@ -97,6 +97,14 @@ class Evaluation_Log(object):
             sum_j += J
             num += 1
         return sum_j / max(num, 1)
+
+    def print_average(self, info=None):
+        if info is not None:
+            print("~~>", info, ":")
+        print("    ", "{:<20}".format("IOU"), ": %.4f" % (self.get_mean_iou()))
+        print("    ", "{:<20}".format("Boundary_f"), ": %.4f" % (self.get_f_score()))
+        print("    ", "{:<20}".format("Iou_J"), ": %.4f" % (self.get_j_score()))
+
 
 
 if __name__ == "__main__":

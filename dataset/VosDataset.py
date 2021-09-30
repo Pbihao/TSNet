@@ -167,6 +167,9 @@ class VosDataset(Dataset):
         else:
             return self.get_test_item(item)
 
+    def get_category_list(self):
+        return self.category_list
+
 
 if __name__ == "__main__":
     from utility import show_img
