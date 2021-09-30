@@ -102,8 +102,8 @@ class Evaluation_Log(object):
         if info is not None:
             print("~~>", info, ":")
         print("    ", "{:<20}".format("IOU"), ": %.4f" % (self.get_mean_iou()))
-        print("    ", "{:<20}".format("Boundary_f"), ": %.4f" % (self.get_f_score()))
-        print("    ", "{:<20}".format("Iou_J"), ": %.4f" % (self.get_j_score()))
+        print("    ", "{:<20}".format("Boundary_f"), ": %.4f" % (self.get_mean_f_score()))
+        print("    ", "{:<20}".format("Iou_J"), ": %.4f" % (self.get_mean_j_score()))
 
 
 
