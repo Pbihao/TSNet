@@ -13,7 +13,6 @@ from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
 from utils.Measure_Log import Measure_Log
 from utils.model_store import *
-from utils.evalution import eval_boundary_iou
 from tqdm import tqdm
 
 
@@ -100,6 +99,7 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
 
         loss_measure.print_average()
         mean_loss = loss_measure.get_average(['total_loss']).total_loss
+        save_checkpoint(model, epoch, mean_loss, optimizer)
 
         eval_measure = Measure_Log(['boundary', 'iou'],
                                    "The scores of boundary and iou measures of Epoch {:d}".format(epoch))
@@ -116,7 +116,6 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
                 eval_measure.add([boundary, iou], num=num)
 
         eval_measure.print_average()
-        save_checkpoint(model, epoch, mean_loss, optimizer)
         mean_iou = eval_measure.get_average(['iou']).iou
         mean_boundary = eval_measure.get_average(['boundary']).boundary
         if mean_iou > best_mean_iou:
