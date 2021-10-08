@@ -82,7 +82,7 @@ def test(open_log=True, save_prediction_maps=False):
     print('==> Test Model: ', args.arch)
     model = TSNet()
     print('    Number of total params: %.2fM.' % (get_model_para_number(model) / 1000000))
-    load_model(model)
+    # load_model(model)
     model = turn_on_cuda(model)
 
     print('\n==> Preparing dataset ... ')
@@ -106,13 +106,15 @@ def test(open_log=True, save_prediction_maps=False):
                 pred_map = pred_map.squeeze(2)
                 query_mask = query_mask.squeeze(2)
 
+                evaluation.add(idx, query_mask, pred_map)
+
                 if save_prediction_maps:
                     save_predicts(pred_map, query_mask, name[0], id, idx[0].item())
-                evaluation.add(idx, query_mask, pred_map)
 
     evaluation.print_average("The score of the whole test process")
     close_log_file()
 
 
 if __name__ == "__main__":
-    test()
+    args.valid_idx = 2
+    test(save_prediction_maps=True)
