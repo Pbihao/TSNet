@@ -1,5 +1,8 @@
 # @Author: Pbihao
 # @Time  : 30/9/2021 9:48 AM
+import os
+import pickle
+
 import torch
 
 from utils.evalution import eval_cross, eval_boundary_iou
@@ -104,6 +107,17 @@ class Evaluation_Log(object):
         print("    ", "{:<20}".format("IOU"), ": %.4f" % (self.get_mean_iou()))
         print("    ", "{:<20}".format("Boundary_f"), ": %.4f" % (self.get_mean_f_score()))
         print("    ", "{:<20}".format("Iou_J"), ": %.4f" % (self.get_mean_j_score()))
+
+    def save(self, path=None):
+        assert path is not None
+        if not os.path.exists(path):
+            os.makedirs(path)
+        res = {'IOU': self.get_mean_iou(),
+               'Boundary_f': self.get_mean_f_score(),
+               'Iou_J': self.get_mean_j_score(),
+               'category': self.category_list}
+        with open(os.path.join(path, "result.pkl"), 'wb') as f:
+            pickle.dump(res, f)
 
 
 

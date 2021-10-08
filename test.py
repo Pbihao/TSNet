@@ -81,7 +81,7 @@ def test(open_log=True, save_prediction_maps=False):
     print('==> Test Model: ', args.arch)
     model = TSNet()
     print('    Number of total params: %.2fM.' % (get_model_para_number(model) / 1000000))
-    load_model(model)
+    # load_model(model)
     model = turn_on_cuda(model)
 
     print('\n==> Preparing dataset ... ')
@@ -98,6 +98,10 @@ def test(open_log=True, save_prediction_maps=False):
         for query_imgs, query_masks, support_img, support_mask, idx, name in tqdm(test_dataloader):
             query_imgs, query_masks, support_img, support_mask = turn_on_cuda(query_imgs), turn_on_cuda(query_masks), \
                                                                turn_on_cuda(support_img), turn_on_cuda(support_mask)
+
+            if save_prediction_maps:
+                folder_eval = Evaluation_Log(idx.tolist())  # ##################
+
             for id in range(0, query_imgs.shape[1], args.query_frame):
                 query_img = query_imgs[:, id: id + args.query_frame, :]
                 query_mask = query_masks[:, id: id + args.query_frame, :]
@@ -109,9 +113,19 @@ def test(open_log=True, save_prediction_maps=False):
                     save_predicts(pred_map, query_mask, name[0], id, idx[0].item())
                 evaluation.add(idx, query_mask, pred_map)
 
+                if save_prediction_maps:
+                    folder_eval.add(idx, query_mask, pred_map) # #####################
+
+            if save_prediction_maps:
+                folder_eval.save(path=os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', name[0]))
+
+
+
+
+
     evaluation.print_average("The score of the whole test process")
     close_log_file()
 
 
 if __name__ == "__main__":
-    test()
+    test(save_prediction_maps=True)
