@@ -70,7 +70,7 @@ def save_predicts(preds_map, query_map, name, id, category):
         cv2.imwrite(pred_path, pred)
 
 
-def test(open_log=True, save_prediction_maps=False):
+def test(open_log=True, save_prediction_maps=False, pretrained=True):
     """
     :param open_log:    set True to write all infos to log file
     """
@@ -81,7 +81,8 @@ def test(open_log=True, save_prediction_maps=False):
     print('==> Test Model: ', args.arch)
     model = TSNet()
     print('    Number of total params: %.2fM.' % (get_model_para_number(model) / 1000000))
-    # load_model(model)
+    if pretrained:
+        load_model(model)
     model = turn_on_cuda(model)
 
     print('\n==> Preparing dataset ... ')
