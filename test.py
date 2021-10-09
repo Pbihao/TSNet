@@ -124,8 +124,8 @@ def test(open_log=True, save_prediction_maps=False, pretrained=True):
                 preds = []
                 for i in range(id, id + pred_map.shape[0]):
                     png_name = "{:05d}.png".format(i * 5)
-                    pred_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Predictions', name)
-                    query_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', name)
+                    pred_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Predictions', name[0])
+                    query_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', name[0])
                     mask = cv2.imread(os.path.join(query_dir, png_name), cv2.IMREAD_GRAYSCALE)
                     pred = cv2.imread(os.path.join(pred_dir, png_name), cv2.IMREAD_GRAYSCALE)
                     c = np.unique(mask)[1]
