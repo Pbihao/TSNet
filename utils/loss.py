@@ -53,3 +53,11 @@ def mask_iou_loss(pred, mask):
 
     loss = loss / N
     return loss
+
+
+if __name__ == "__main__":
+    a = torch.Tensor([[0.1, 0.2],
+                      [0.5, 0.7]]).view(1, 1, 2, 2)
+    b = torch.Tensor([[0.3, 0.2],
+                      [0.8, 0.1]]).view(1, 1, 2, 2)
+    print(cross_entropy_loss(a, b))
