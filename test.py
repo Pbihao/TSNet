@@ -122,7 +122,7 @@ def test(open_log=True, save_prediction_maps=False, pretrained=True):
                 #  ##############################
                 masks = []
                 preds = []
-                for i in range(id, id + pred_map.shape[0]):
+                for i in range(id, id + pred_map.shape[1]):
                     png_name = "{:05d}.png".format(i * 5)
                     pred_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Predictions', name[0])
                     query_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', name[0])
