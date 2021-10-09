@@ -73,7 +73,8 @@ def save_predicts(preds_map, query_map, name, id, category):
         cv2.imwrite(pred_path, pred)
 
 
-def test(open_log=True, save_prediction_maps=False):
+
+def test(open_log=True, save_prediction_maps=False, pretrained=True):
     """
     :param open_log:    set True to write all infos to log file
     """
@@ -84,7 +85,8 @@ def test(open_log=True, save_prediction_maps=False):
     print('==> Test Model: ', args.arch)
     model = TSNet()
     print('    Number of total params: %.2fM.' % (get_model_para_number(model) / 1000000))
-    load_model(model)
+    if pretrained:
+        load_model(model)
     model = turn_on_cuda(model)
 
     print('\n==> Preparing dataset ... ')
@@ -96,6 +98,9 @@ def test(open_log=True, save_prediction_maps=False):
     print('\n==> Start Testing ... ')
 
     evaluation = Evaluation_Log(test_dataset.get_category_list(), print_step=True)
+
+    ev = Evaluation_Log([2, 6, 10, 14, 18, 22, 26, 30, 34, 38], print_step=False)  # ##############################
+
     order = []
     with torch.no_grad():
         model.eval()
@@ -114,6 +119,39 @@ def test(open_log=True, save_prediction_maps=False):
                 if save_prediction_maps:
                     save_predicts(pred_map, query_mask, name[0], id, idx[0].item())
 
+                #  ##############################
+                masks = []
+                preds = []
+                for i in range(id, id + pred_map.shape[0]):
+                    png_name = "{:05d}.png".format(i * 5)
+                    pred_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Predictions', name)
+                    query_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', name)
+                    mask = cv2.imread(os.path.join(query_dir, png_name), cv2.IMREAD_GRAYSCALE)
+                    pred = cv2.imread(os.path.join(pred_dir, png_name), cv2.IMREAD_GRAYSCALE)
+                    c = np.unique(mask)[1]
+                    mask = mask == c
+                    pred = pred == c
+
+                    mask = torch.Tensor(mask)
+                    pred = torch.Tensor(pred)
+                    masks.append(mask)
+                    preds.append(pred)
+                    cls = [c]
+                mask = torch.stack(masks, dim=0).unsqueeze(0)
+                pred = torch.stack(preds, dim=0).unsqueeze(0)
+                ev.add(cls, mask, pred)
+                if ev.get_mean_iou() != evaluation.get_mean_iou() or \
+                    ev.get_mean_f_score() != evaluation.get_mean_f_score() or \
+                        ev.get_mean_j_score() != evaluation.get_mean_j_score():
+                    print(name[0])
+                    print(id)
+                    print("ev=====>")
+                    print(ev.category_record)
+                    ev.print_average()
+                    print("evaluation=====>")
+                    print(evaluation.category_record)
+                    evaluation.print_average()
+
             order.append(name[0])
         with open(os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', 'order.pkl'), 'wb') as f:
             pickle.dump(order, f)
@@ -125,4 +163,4 @@ def test(open_log=True, save_prediction_maps=False):
 
 if __name__ == "__main__":
     args.valid_idx = 2
-    test(save_prediction_maps=True)
+    test(save_prediction_maps=True, pretrained=False)
