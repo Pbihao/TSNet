@@ -73,7 +73,7 @@ def save_predicts(preds_map, query_map, name, id, category):
         order_detail.append(query_path)
         cv2.imwrite(query_path, query)
         cv2.imwrite(pred_path, pred)
-
+        global last_cat
         if category != last_cat and category != last_cat + 4:
             print(category)
             print(last_cat)
