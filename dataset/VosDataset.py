@@ -172,27 +172,13 @@ class VosDataset(Dataset):
 
 
 if __name__ == "__main__":
-    from utility import show_img
-
-
-    def save(imgs, path):
-        if not os.path.exists(path):
-            os.mkdir(path)
-        for id, img in enumerate(imgs):
-            Image.fromarray(img).save(os.path.join(path, str(id) + '.png'))
-
-
     from dataset.Transform import Transform
-
+    from tqdm import tqdm
+    from torch.utils.data import DataLoader
     transform = Transform(args.input_size)
-    ytvos = VosDataset(test=True)
-    for i in range(len(ytvos)):
-        video_query_img, video_query_mask, new_support_img, new_support_mask, idx, name = ytvos[i]
-        print("id:", i)
+    test_dataset = VosDataset(test=True, transforms=transform, valid_idx=2)
+    test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
+    for query_imgs, query_masks, support_img, support_mask, idx, name in tqdm(test_dataloader):
+        print(idx[0])
 
-        # save(video_query_img, os.path.join(os.getcwd(), "tmp", "video_query_img"))
-        # save(video_query_mask, os.path.join(os.getcwd(), "tmp", "video_query_mask"))
-        # save(new_support_img, os.path.join(os.getcwd(), "tmp", "new_support_img"))
-        # save(new_support_mask, os.path.join(os.getcwd(), "tmp", "new_support_mask"))
-        #
-        # break
+
