@@ -151,6 +151,7 @@ def test(open_log=True, save_prediction_maps=False, pretrained=True):
                     print("evaluation=====>")
                     print(evaluation.category_record)
                     evaluation.print_average()
+                    quit()
 
             order.append(name[0])
         with open(os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', 'order.pkl'), 'wb') as f:
