@@ -120,7 +120,7 @@ def test(open_log=True, save_prediction_maps=False, pretrained=True):
 
                 if save_prediction_maps:
                     save_predicts(pred_map, query_mask, name[0], id, idx[0].item())
-                    print(idx[0].item)
+                    print(idx[0].item())
 
             order.append(name[0])
         with open(os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', 'order.pkl'), 'wb') as f:
