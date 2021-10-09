@@ -74,14 +74,13 @@ def save_predicts(preds_map, query_map, name, id, category):
         cv2.imwrite(query_path, query)
         cv2.imwrite(pred_path, pred)
 
-        last_cat = category
         if category != last_cat and category != last_cat + 4:
             print(category)
             print(last_cat)
             print(name)
             print(id)
             quit()
-
+        last_cat = category
 
 
 def test(open_log=True, save_prediction_maps=False, pretrained=True):
