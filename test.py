@@ -1,7 +1,11 @@
 # @Author: Pbihao
 # @Time  : 28/9/2021 8:52 PM
 import os
+import pickle
+
 import torch
+
+from utils.davis_JF import db_eval_boundary, db_eval_iou
 from utils.model_store import get_model_para_number
 from models.TSNet import TSNet
 from args import args
@@ -42,8 +46,9 @@ def turn_on_cuda(x):
     return x
 
 
-def save_predicts(preds_map, query_map, name, id, category):
+def save_predicts(preds_map, query_map, name, id, category, dic=None):
     """
+    :param dic: save all infosin dic
     :param category: what is the category for the mask
     :param preds_map:  normal [B, F, H, W]
     :param query_map:  normal [B, F, H, W]
@@ -69,6 +74,15 @@ def save_predicts(preds_map, query_map, name, id, category):
         cv2.imwrite(query_path, query)
         cv2.imwrite(pred_path, pred)
 
+        if dic is not None:  # ###########################################
+            pred = (pred == category) * 1
+            query = (query == category) * 1
+            boundary_sum = db_eval_boundary(pred, query)
+            iou_sum = db_eval_iou(pred, query)
+            name = "{:05d}".format((id + idx) * 5)
+            dic[name + '_J'] = iou_sum
+            dic[name + '_F'] = boundary_sum
+
 
 def test(open_log=True, save_prediction_maps=False, pretrained=True):
     """
@@ -93,12 +107,19 @@ def test(open_log=True, save_prediction_maps=False, pretrained=True):
 
     print('\n==> Start Testing ... ')
 
+    detail_result = {  # ##################
+        'order': []
+    }
+
     evaluation = Evaluation_Log(test_dataset.get_category_list(), print_step=True)
     with torch.no_grad():
         model.eval()
         for query_imgs, query_masks, support_img, support_mask, idx, name in tqdm(test_dataloader):
             query_imgs, query_masks, support_img, support_mask = turn_on_cuda(query_imgs), turn_on_cuda(query_masks), \
                                                                turn_on_cuda(support_img), turn_on_cuda(support_mask)
+
+            detail_result['order'].append(name[0])  # #########################
+            tmp_res = {}  # ##################################
 
             if save_prediction_maps:
                 folder_eval = Evaluation_Log(idx.tolist())  # ##################
@@ -111,22 +132,23 @@ def test(open_log=True, save_prediction_maps=False, pretrained=True):
                 query_mask = query_mask.squeeze(2)
 
                 if save_prediction_maps:
-                    save_predicts(pred_map, query_mask, name[0], id, idx[0].item())
+                    save_predicts(pred_map, query_mask, name[0], id, idx[0].item(), tmp_res)  # ##################################
                 evaluation.add(idx, query_mask, pred_map)
 
                 if save_prediction_maps:
-                    folder_eval.add(idx, query_mask, pred_map) # #####################
+                    folder_eval.add(idx, query_mask, pred_map)  # #####################
 
             if save_prediction_maps:
+                detail_result[name[0]] = tmp_res
                 folder_eval.save(path=os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', name[0]))
 
-
-
-
+    if save_prediction_maps:  # ##################################################
+        with open(os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', 'detail.pkl'), 'wb') as f:
+            pickle.dump(detail_result, f)
 
     evaluation.print_average("The score of the whole test process")
     close_log_file()
 
 
 if __name__ == "__main__":
-    test(save_prediction_maps=True)
+    test(save_prediction_maps=True, pretrained=False)
