@@ -44,7 +44,7 @@ def turn_on_cuda(x):
     return x
 
 order_detail = []
-last_cat = 0
+last_cat = -2
 def save_predicts(preds_map, query_map, name, id, category):
     """
     :param category: what is the category for the mask
