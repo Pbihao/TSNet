@@ -47,8 +47,10 @@ class Evaluation_Log(object):
             self.category_record[category].num += query_mask.shape[0]
 
             self.step += 1
-            if self.print_step and self.step % 100 == 0:
+            if self.print_step and self.step % 1 == 0:
                 self.print_average("The score at step {:d}".format(self.step))
+
+            return boundary_sum, iou_sum, query_mask.shape[0]
 
     def get_iou(self, category):
         if category not in self.category_record or self.category_record[category].union == 0:

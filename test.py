@@ -1,6 +1,8 @@
 # @Author: Pbihao
 # @Time  : 28/9/2021 8:52 PM
 import os
+import pickle
+
 import torch
 from utils.model_store import get_model_para_number
 from models.TSNet import TSNet
@@ -52,10 +54,10 @@ def save_predicts(preds_map, query_map, name, id, category):
     """
     preds_map = preds_map.squeeze(0)
     query_map = query_map.squeeze(0)
+    preds_map = preds_map.detach().cpu().numpy()
+    query_map = query_map.detach().cpu().numpy()
     preds_map = preds_map > args.pred_thresh
     query_map = query_map > args.pred_thresh
-    preds_map = preds_map.type(torch.int).detach().cpu().numpy()
-    query_map = query_map.type(torch.int).detach().cpu().numpy()
     for idx in range(preds_map.shape[0]):
         pred = preds_map[idx].astype(np.uint8) * category
         query = query_map[idx].astype(np.uint8) * category
@@ -94,6 +96,7 @@ def test(open_log=True, save_prediction_maps=False):
     print('\n==> Start Testing ... ')
 
     evaluation = Evaluation_Log(test_dataset.get_category_list(), print_step=True)
+    order = []
     with torch.no_grad():
         model.eval()
         for query_imgs, query_masks, support_img, support_mask, idx, name in tqdm(test_dataloader):
@@ -106,10 +109,15 @@ def test(open_log=True, save_prediction_maps=False):
                 pred_map = pred_map.squeeze(2)
                 query_mask = query_mask.squeeze(2)
 
-                evaluation.add(idx, query_mask, pred_map)
+                boundary, iou, num = evaluation.add(idx, query_mask, pred_map)
 
                 if save_prediction_maps:
                     save_predicts(pred_map, query_mask, name[0], id, idx[0].item())
+
+            order.append(name[0])
+        with open(os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', 'order.pkl'), 'wb') as f:
+            pickle.dump(order, f)
+
 
     evaluation.print_average("The score of the whole test process")
     close_log_file()
