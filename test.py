@@ -44,6 +44,7 @@ def turn_on_cuda(x):
     return x
 
 order_detail = []
+last_cat = 0
 def save_predicts(preds_map, query_map, name, id, category):
     """
     :param category: what is the category for the mask
@@ -72,6 +73,13 @@ def save_predicts(preds_map, query_map, name, id, category):
         order_detail.append(query_path)
         cv2.imwrite(query_path, query)
         cv2.imwrite(pred_path, pred)
+
+        if category != last_cat and category != last_cat + 4:
+            print(category)
+            print(last_cat)
+            print(name)
+            print(id)
+            quit()
 
 
 
