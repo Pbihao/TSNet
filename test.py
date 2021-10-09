@@ -79,9 +79,9 @@ def save_predicts(preds_map, query_map, name, id, category, dic=None):
             query = (query == category) * 1
             boundary_sum = db_eval_boundary(pred, query)
             iou_sum = db_eval_iou(pred, query)
-            name = "{:05d}".format((id + idx) * 5)
-            dic[name + '_J'] = iou_sum
-            dic[name + '_F'] = boundary_sum
+            _name_ = "{:05d}".format((id + idx) * 5)
+            dic[_name_ + '_J'] = iou_sum
+            dic[_name_ + '_F'] = boundary_sum
 
 
 def test(open_log=True, save_prediction_maps=False, pretrained=True):
