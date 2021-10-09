@@ -43,7 +43,7 @@ def turn_on_cuda(x):
         return x.cuda()
     return x
 
-
+order_detail = []
 def save_predicts(preds_map, query_map, name, id, category):
     """
     :param category: what is the category for the mask
@@ -69,6 +69,7 @@ def save_predicts(preds_map, query_map, name, id, category):
             os.makedirs(query_dir)
         pred_path = os.path.join(pred_dir, "{:05d}.png".format((id + idx) * 5))
         query_path = os.path.join(query_dir, "{:05d}.png".format((id + idx) * 5))
+        order_detail.append(query_path)
         cv2.imwrite(query_path, query)
         cv2.imwrite(pred_path, pred)
 
@@ -102,6 +103,7 @@ def test(open_log=True, save_prediction_maps=False, pretrained=True):
     ev = Evaluation_Log([2, 6, 10, 14, 18, 22, 26, 30, 34, 38], print_step=False)  # ##############################
 
     order = []
+
     with torch.no_grad():
         model.eval()
         for query_imgs, query_masks, support_img, support_mask, idx, name in tqdm(test_dataloader):
@@ -119,43 +121,12 @@ def test(open_log=True, save_prediction_maps=False, pretrained=True):
                 if save_prediction_maps:
                     save_predicts(pred_map, query_mask, name[0], id, idx[0].item())
 
-                #  ##############################
-                masks = []
-                preds = []
-                for i in range(id, id + pred_map.shape[1]):
-                    png_name = "{:05d}.png".format(i * 5)
-                    pred_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Predictions', name[0])
-                    query_dir = os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', name[0])
-                    mask = cv2.imread(os.path.join(query_dir, png_name), cv2.IMREAD_GRAYSCALE)
-                    pred = cv2.imread(os.path.join(pred_dir, png_name), cv2.IMREAD_GRAYSCALE)
-                    c = np.unique(mask)[1]
-                    mask = mask == c
-                    pred = pred == c
-
-                    mask = torch.Tensor(mask)
-                    pred = torch.Tensor(pred)
-                    masks.append(mask)
-                    preds.append(pred)
-                    cls = [c]
-                mask = torch.stack(masks, dim=0).unsqueeze(0)
-                pred = torch.stack(preds, dim=0).unsqueeze(0)
-                ev.add(cls, mask, pred)
-                if ev.get_mean_iou() != evaluation.get_mean_iou() or \
-                    ev.get_mean_f_score() != evaluation.get_mean_f_score() or \
-                        ev.get_mean_j_score() != evaluation.get_mean_j_score():
-                    print(name[0])
-                    print(id)
-                    print("ev=====>")
-                    print(ev.category_record)
-                    ev.print_average()
-                    print("evaluation=====>")
-                    print(evaluation.category_record)
-                    evaluation.print_average()
-                    quit()
-
             order.append(name[0])
         with open(os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', 'order.pkl'), 'wb') as f:
             pickle.dump(order, f)
+
+        with open(os.path.join(args.data_dir, 'Youtube-VOS', 'test', 'Masks', 'order_detail.pkl'), 'wb') as f:
+            pickle.dump(order_detail, f)
 
 
     evaluation.print_average("The score of the whole test process")

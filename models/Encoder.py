@@ -67,11 +67,6 @@ if __name__ == "__main__":
     q_r4, q_r3, q_r2, q_c1, q_f = encoder(query_img)
     s_r4, s_r3, s_r2, s_c1, s_f = encoder(support_img, support_mask)
 
-    # support_path = os.path.join(os.getcwd(), 'tmp', 'support')
-    # save_normal_img(support_img[3], support_path + '/query.png')
-    # save_normal_img(support_mask[3], support_path + '/support.png')
-    #
-    # save_features(s_r4[3], support_path + '/r4')
 
     idx = 4
     query_path = os.path.join(os.getcwd(), 'tmp', 'query')
