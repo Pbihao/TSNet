@@ -82,7 +82,7 @@ def test(open_log=True, save_prediction_maps=False):
     print('==> Test Model: ', args.arch)
     model = TSNet()
     print('    Number of total params: %.2fM.' % (get_model_para_number(model) / 1000000))
-    # load_model(model)
+    load_model(model)
     model = turn_on_cuda(model)
 
     print('\n==> Preparing dataset ... ')

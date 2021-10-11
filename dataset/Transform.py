@@ -275,6 +275,43 @@ class Support_crop(object):
         return dst_imgs, dst_annos
 
 
+class TrainTransform(object):
+
+    def __init__(self, size):
+        self.transform = Compose([
+            AddAxis(),
+            Transpose(),
+            RandomAffine(),
+            ToFloat(),
+            RandomContrast(),
+            AdditiveNoise(),
+            RandomMirror(),
+            Rescale(size),
+            Normalize(),
+            Stack(),
+            ToTensor(),
+        ])
+
+    def __call__(self, imgs, annos, support=False):
+        return self.transform(imgs, annos)
+
+
+class TestTransform(object):
+
+    def __init__(self, size):
+        self.transform = Compose([
+            AddAxis(),
+            ToFloat(),
+            Rescale(size),
+            Normalize(),
+            Stack(),
+            ToTensor(),
+        ])
+
+    def __call__(self, imgs, annos, support=False):
+        return self.transform(imgs, annos)
+
+
 class Transform(object):
     def __init__(self, size):
         self.support_crop = Support_crop(size)
