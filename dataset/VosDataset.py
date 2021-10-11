@@ -31,6 +31,7 @@ class VosDataset(Dataset):
         self.load_annotations()
         print("Data set index:   {:d}.".format(self.valid_idx))
 
+
         if not valid and not test:
             self.category_list = [i + 1 for i in range(num_of_all_classes)
                                   if i % num_of_per_group != (valid_idx - 1)]
@@ -182,10 +183,12 @@ if __name__ == "__main__":
             Image.fromarray(img).save(os.path.join(path, str(id) + '.png'))
 
 
+
     from dataset.Transform import Transform
 
     transform = Transform(args.input_size)
     ytvos = VosDataset(test=True)
+
     for i in range(len(ytvos)):
         video_query_img, video_query_mask, new_support_img, new_support_mask, idx, name = ytvos[i]
         print("id:", i)

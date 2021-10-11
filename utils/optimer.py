@@ -11,7 +11,6 @@ def get_optimizer(model):
             {'params': model.support_qkv.parameters()},
             {'params': model.query_qkv.parameters()},
             {'params': model.conv_q.parameters()},
-            {'params': model.sigmoid.parameters()},
         ],
         lr=1e-5, betas=(0.9, 0.999), weight_decay=5e-4
     )

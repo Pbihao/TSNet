@@ -16,6 +16,7 @@ develop-eggs/
 dist/
 downloads/
 eggs/
+pretrain_model/
 .eggs/
 lib/
 pretrain_model/

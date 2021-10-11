@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -103,6 +105,7 @@ class TSNet(nn.Module):
 
         query_r4 = self.conv_q(query_r4)  # [B * F, Cv, H, W]
         V = merge_batch_frame(V)  # [B * F, Cv, H, W]
+        # query_r4 = query_r4 * V
         query_r4 = torch.cat([V, query_r4], dim=1)  # [B * F, C, H, W]
 
         mask = self.decoder(query_r4, query_r3, query_r2, query_in_f)
@@ -112,5 +115,11 @@ class TSNet(nn.Module):
 
 
 if __name__ == "__main__":
-    a = torch.ones((1, 4, 3, 241, 421))
-    TSNet().forward(a, a, a[:, :, 1, :].unsqueeze(2))
+    tsnet = TSNet()
+
+    tsnet.eval()
+
+    img = torch.randn((1, 5, 3, 22, 22))
+    tsnet.forward(img, img, img[:, :, 1, :].unsqueeze(2))
+
+

@@ -7,7 +7,7 @@ import sys
 from utils.Logger import Logger
 from utils.optimer import get_optimizer
 from utils.model_store import load_checkpoint
-from dataset.Transform import Transform
+from dataset.Transform import Transform, TrainTransform, TestTransform
 from dataset.VosDataset import VosDataset
 from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
@@ -53,8 +53,10 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
     print('==> Train Model: ', args.arch)
     model = TSNet()
     print('    Number of total params: %.2fM.' % (get_model_para_number(model) / 1000000))
-    model = turn_on_cuda(model)
+
     optimizer = get_optimizer(model)
+    model = turn_on_cuda(model)
+
     start_epoch = 0
     best_mean_iou = 0
     if pretrained_model:
@@ -67,14 +69,17 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
 
     print('\n==> Preparing dataset ... ')
     transform = Transform(args.input_size)
-    train_dataset = VosDataset(transforms=transform)
-    valid_dataset = VosDataset(valid=True, transforms=transform)
+    train_transform = TrainTransform(args.input_size)
+    test_transform = TestTransform(args.input_size)
+    train_dataset = VosDataset(transforms=train_transform)
+    valid_dataset = VosDataset(valid=True, transforms=test_transform)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
                               num_workers=args.num_workers, drop_last=True)
     valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False, num_workers=2)
 
     print('\n==> Setting loss')
-    criterion = lambda pred, target: [cross_entropy_loss(pred, target), mask_iou_loss(pred, target)]
+    criterion = lambda pred, target, bootstrap=1: [cross_entropy_loss(pred, target, bootstrap),
+                                                   mask_iou_loss(pred, target)]
     print('\n==> Start training ... ')
     for epoch in range(start_epoch, args.max_epoch):
         print('\n==> Training epoch {:d}'.format(epoch))
@@ -101,9 +106,9 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
         mean_loss = loss_measure.get_average(['total_loss']).total_loss
         save_checkpoint(model, epoch, mean_loss, optimizer)
 
+        model.eval()
         evaluation = Evaluation_Log(valid_dataset.get_category_list())
         with torch.no_grad():
-            model.eval()
             for query_img, query_mask, support_img, support_mask, idx in tqdm(valid_loader):
                 query_img, query_mask, support_img, support_mask = turn_on_cuda(query_img), turn_on_cuda(query_mask), \
                                                                    turn_on_cuda(support_img), turn_on_cuda(support_mask)
