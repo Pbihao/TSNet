@@ -86,6 +86,7 @@ def test(open_log=True, save_prediction_maps=False):
     model = turn_on_cuda(model)
 
     print('\n==> Preparing dataset ... ')
+
     transform = TestTransform(args.input_size)
     test_dataset = VosDataset(test=True, transforms=transform)
     # in TEST the batch_size of loader must be 1
