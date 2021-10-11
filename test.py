@@ -9,7 +9,7 @@ import sys
 from utils.Logger import Logger
 from utils.optimer import get_optimizer
 from utils.model_store import load_checkpoint
-from dataset.Transform import Transform
+from dataset.Transform import Transform, TestTransform
 from dataset.VosDataset import VosDataset
 from torch.utils.data import DataLoader
 from utils.loss import cross_entropy_loss, mask_iou_loss
@@ -86,7 +86,7 @@ def test(open_log=True, save_prediction_maps=False):
     model = turn_on_cuda(model)
 
     print('\n==> Preparing dataset ... ')
-    transform = Transform(args.input_size)
+    transform = TestTransform(args.input_size)
     test_dataset = VosDataset(test=True, transforms=transform)
     # in TEST the batch_size of loader must be 1
     test_dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=0)
