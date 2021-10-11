@@ -278,6 +278,7 @@ class Support_crop(object):
 class TrainTransform(object):
 
     def __init__(self, size):
+        self.support_crop = Support_crop(size)
         self.transform = Compose([
             AddAxis(),
             Transpose(),
@@ -293,12 +294,15 @@ class TrainTransform(object):
         ])
 
     def __call__(self, imgs, annos, support=False):
+        if support:
+            imgs, annos = self.support_crop(imgs, annos)
         return self.transform(imgs, annos)
 
 
 class TestTransform(object):
 
     def __init__(self, size):
+        self.support_crop = Support_crop(size)
         self.transform = Compose([
             AddAxis(),
             ToFloat(),
@@ -309,6 +313,8 @@ class TestTransform(object):
         ])
 
     def __call__(self, imgs, annos, support=False):
+        if support:
+            imgs, annos = self.support_crop(imgs, annos)
         return self.transform(imgs, annos)
 
 

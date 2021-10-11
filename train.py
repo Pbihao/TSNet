@@ -69,8 +69,8 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
 
     print('\n==> Preparing dataset ... ')
     transform = Transform(args.input_size)
-    test_transform = TestTransform(args.input_size)
     train_transform = TrainTransform(args.input_size)
+    test_transform = TestTransform(args.input_size)
     train_dataset = VosDataset(transforms=train_transform)
     valid_dataset = VosDataset(valid=True, transforms=test_transform)
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True,
