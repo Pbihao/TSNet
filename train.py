@@ -78,7 +78,7 @@ def train(open_log=True, checkpoint=False, pretrained_model=False):
     valid_loader = DataLoader(valid_dataset, batch_size=args.batch_size, shuffle=False, num_workers=2)
 
     print('\n==> Setting loss')
-    criterion = lambda pred, target, bootstrap=1: [cross_entropy_loss(pred, target, bootstrap),
+    criterion = lambda pred, target: [cross_entropy_loss(pred, target),
                                                    mask_iou_loss(pred, target)]
     print('\n==> Start training ... ')
     for epoch in range(start_epoch, args.max_epoch):
