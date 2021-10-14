@@ -1,22 +1,23 @@
 # @Author: Pbihao
 # @Time  : 14/10/2021 2:43 PM
+import os
+
 import torch
 from models.Encoder import *
+import sys
+from utils.Logger import Logger
+sys.stdout = Logger(os.path.join(os.getcwd(), 'tmp/cos_log.txt'))
+from dataset.Transform import TestTransform, unnormalize_tensor_to_img
+from dataset.VosDataset import VosDataset
+from args import args
+import torch.nn as nn
+import numpy as np
+from pprint import pprint
+import pickle
+from matplotlib import pyplot as plt
+
 
 with torch.no_grad():
-    import sys
-    from utils.Logger import Logger
-    sys.stdout = Logger("/home/pbihao/PycharmProjects/TSNet/tmp/cos_log.txt")
-    from dataset.Transform import TestTransform, unnormalize_tensor_to_img
-    from dataset.VosDataset import VosDataset
-    from args import args
-    import torch.nn as nn
-    import numpy as np
-    from pprint import pprint
-    import pickle
-
-    from matplotlib import pyplot as plt
-
     transform = TestTransform(args.input_size)
     dataset = VosDataset(transforms=transform)
     encoder = Encoder()
